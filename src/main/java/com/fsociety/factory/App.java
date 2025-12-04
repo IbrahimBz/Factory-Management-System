@@ -8,6 +8,8 @@ public class App {
 
         System.out.println("Hello World!");
         System.out.println("Hello From Nazeer .......");
-        System.out.println("hjgf");
+        System.out.println("");
+
+        System.out.println( " go to play from mozaffer ");
     }
 }
