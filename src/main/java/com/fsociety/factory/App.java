@@ -7,10 +7,6 @@ public class App {
     public static void main(String[] args) {
 
         System.out.println("Hello World!");
-        System.out.println("Hello From Nazeer .......");
-        System.out.println("");
 
-        System.out.println( " go to play from mozaffer ");
-        System.out.println(" hi nazzer ");
     }
 }
