@@ -1,0 +1,2 @@
+itemID,itemName,categoryID,itemPrice,availableQuantity,minimumAllowedQuantity
+1,transistor,0,100.00,10,1
