@@ -13,11 +13,13 @@ public class AccessItems {
 
     public static enum Categories{ electronics, clothes, nutrition };
 
+
+    private static String filePath = "src//main//resources//dataFiles//items.csv";
+
     public static List<String[]> getItems() {
 
         List<String[]> items = new ArrayList<String[]>();
 
-        String filePath = "src//main//resources//dataFiles//items.csv";
 
         try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
 
