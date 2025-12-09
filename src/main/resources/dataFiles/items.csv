@@ -1,2 +1,3 @@
 itemID,itemName,categoryID,itemPrice,availableQuantity,minimumAllowedQuantity
-1,transistor,0,100.00,10,1
+1,transistor,0,100,10,1
+2,bread,2,299,1000,10
