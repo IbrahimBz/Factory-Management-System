@@ -11,7 +11,6 @@ import java.util.List;
 
 public class AccessItems {
 
-    public static enum Categories{ electronics, clothes, nutrition };
 
 
     private static String filePath = "src//main//resources//dataFiles//items.csv";
