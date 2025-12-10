@@ -25,7 +25,7 @@ public class ProductLine {
     private int id;
     private String name;
     private enProductLineStatus status; // متوقف، نشط، صيانة...
-    private List<Task> tasks;
+    private List<TaskThread> tasks;
     private boolean isAvailable;
 
     public boolean isAvailable() {
@@ -43,14 +43,16 @@ public class ProductLine {
         this.tasks = new ArrayList<>();
     }
 
-    public void addTask(Task task) {
+    public void addTask(TaskThread task) {
         tasks.add(task);
     }
 
     public int getID() { return id; }
     public String getName() { return name; }
     public enProductLineStatus getStatus() { return status; }
-    public List<Task> getTasks() { return tasks; }
+    public List<TaskThread> getTasks() { return tasks; }
+
+
 
 
 

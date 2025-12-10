@@ -1,7 +1,13 @@
 package com.fsociety.factory.BusinessLayer;
 
+import com.fsociety.factory.dataAccessLayer.AccessItems;
+
 public class Item {
+
+    // This static field holds the highest ID used so far
+
     public static enum enItemCategory {
+        UNDETERMINED,
         ELECTRONICS,
         CLOTHING,
         FOOD;
@@ -17,21 +23,100 @@ public class Item {
         }
     }
 
-
     private int id;
     private String name;
-    private enItemCategory category;
+    private int categoryID;
     private double price;
     private int availableQuantity;
     private int minAllowedQuantity;
+    private Util.enObjectMode mode;
 
-    public Item(int id, String name, enItemCategory category, double price, int availableQuantity, int minAllowedQuantity) {
+
+    private Item(int id, String name, int categoryID, double price, int availableQuantity, int minAllowedQuantity) {
         this.id = id;
         this.name = name;
-        this.category = category;
+        this.categoryID = categoryID;
         this.price = price;
         this.availableQuantity = availableQuantity;
         this.minAllowedQuantity = minAllowedQuantity;
+        this.mode = Util.enObjectMode.UPDATE;
+    }
+
+    private boolean _AddNew() {
+        int id = AccessItems.addItem(this.name,this.categoryID,this.price,this.availableQuantity,this.minAllowedQuantity);
+        return (id != -1);
+    }
+
+    public Item() {
+        this.id = -1;
+        this.name = "";
+        this.categoryID = -1;
+        this.price = 0.00;
+        this.availableQuantity = 0;
+        this.minAllowedQuantity = 0;
+        this.mode = Util.enObjectMode.ADDNEW;
+    }
+
+
+    public boolean save() {
+        switch (this.mode) {
+            case ADDNEW:
+                return _AddNew();
+            case UPDATE:
+                //Update method
+            default:
+                return false;
+        }
+    }
+
+
+    public int getId() {
+        return id;
+    }
+
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getCategoryID() {
+        return categoryID;
+    }
+
+    public void setCategoryID(int categoryID) {
+        this.categoryID = categoryID;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public int getAvailableQuantity() {
+        return availableQuantity;
+    }
+
+    public void setAvailableQuantity(int availableQuantity) {
+        this.availableQuantity = availableQuantity;
+    }
+
+    public int getMinAllowedQuantity() {
+        return minAllowedQuantity;
+    }
+
+    public void setMinAllowedQuantity(int minAllowedQuantity) {
+        this.minAllowedQuantity = minAllowedQuantity;
+    }
+
+    public Util.enObjectMode getMode() {
+        return mode;
     }
 
 

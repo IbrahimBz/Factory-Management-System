@@ -1,3 +1,5 @@
-itemID,itemName,categoryID,itemPrice,availableQuantity,minimumAllowedQuantity
-1,transistor,0,100,10,1
-2,bread,2,299,1000,10
+itemID,itemName,categoryID,price,availableQuantity,minAllowedQuantity
+1,Copper,1,1003.3,1000,10
+2,Copper,1,1003.3,1000,10
+3,Copper,1,1003.3,1000,10
+4,Silver,1,1003.3,1000,10

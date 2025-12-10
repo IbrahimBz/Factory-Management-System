@@ -1,8 +1,10 @@
 package com.fsociety.factory.BusinessLayer;
 
+import com.fsociety.factory.BusinessLayer.Exceptions.ProductLineException;
+
 import java.time.LocalDate;
 
-public class Task extends Thread {
+public class TaskThread extends Thread {
 
     public static enum enTaskStatus {
                 PENDING,        // المهمة لم تبدأ بعد
@@ -36,7 +38,7 @@ public class Task extends Thread {
     private enTaskStatus  status;
     private ProductLine assignedLine;
 
-    public Task(int id, int productID, int requiredProductQuantity, LocalDate startDate, ProductLine productLine, int achievedProductQuantity, int clientID, LocalDate endDate, enTaskStatus status, ProductLine assignedLine) {
+    public TaskThread(int id, int productID, int requiredProductQuantity, LocalDate startDate, ProductLine productLine, int achievedProductQuantity, int clientID, LocalDate endDate, enTaskStatus status, ProductLine assignedLine) {
         this.id = id;
         this.productID = productID;
         this.requiredProductQuantity = requiredProductQuantity;
@@ -89,9 +91,13 @@ public class Task extends Thread {
         return (double)(achievedProductQuantity * 100) / requiredProductQuantity;
     }
 
-    public void run() {
+    public void run() throws ProductLineException {
+
+        if(!productLine.isAvailable()) throw new ProductLineException("Product Line Is Not Available");
 
         productLine.setAvailable(false);
+
+
 
     }
 
