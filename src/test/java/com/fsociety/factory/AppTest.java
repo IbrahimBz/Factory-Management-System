@@ -1,5 +1,6 @@
 package com.fsociety.factory;
 
+import com.fsociety.factory.dataAccessLayer.AccessItems;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -10,6 +11,11 @@ import junit.framework.TestSuite;
 public class AppTest 
     extends TestCase
 {
+
+    public void testItemsIO() {
+        AccessItems.getItems();
+    }
+
     /**
      * Create the test case
      *
@@ -35,4 +41,5 @@ public class AppTest
     {
         assertTrue( true );
     }
+
 }
