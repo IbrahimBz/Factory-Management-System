@@ -4,12 +4,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProductLine {
+
+    public static enum enProductLineStatus {
+        STOPPED,    // متوقف
+        ACTIVE,     // نشط
+        MAINTENANCE; // صيانة
+
+        @Override
+        public String toString() {
+            switch (this) {
+                case STOPPED: return "Stopped";
+                case ACTIVE: return "Active";
+                case MAINTENANCE: return "Maintenance";
+                default: return super.toString();
+            }
+        }
+    }
+
+
     private int id;
     private String name;
-    private String status; // متوقف، نشط، صيانة...
+    private enProductLineStatus status; // متوقف، نشط، صيانة...
     private List<Task> tasks;
+    private boolean isAvailable;
 
-    public ProductLine(int id, String name, String status) {
+    public boolean isAvailable() {
+        return isAvailable;
+    }
+
+    public void setAvailable(boolean available) {
+        isAvailable = available;
+    }
+
+    public ProductLine(int id, String name, enProductLineStatus status) {
         this.id = id;
         this.name = name;
         this.status = status;
@@ -22,7 +49,7 @@ public class ProductLine {
 
     public int getID() { return id; }
     public String getName() { return name; }
-    public String getStatus() { return status; }
+    public enProductLineStatus getStatus() { return status; }
     public List<Task> getTasks() { return tasks; }
 
 

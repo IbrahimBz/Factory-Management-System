@@ -2,7 +2,7 @@ package com.fsociety.factory.BusinessLayer;
 
 import java.time.LocalDate;
 
-public class Task {
+public class Task extends Thread {
 
     public static enum enTaskStatus {
                 PENDING,        // المهمة لم تبدأ بعد
@@ -27,6 +27,7 @@ public class Task {
 
     private int id;
     private int productID;
+    private ProductLine productLine;
     private int requiredProductQuantity;
     private int achievedProductQuantity;
     private int clientID;
@@ -35,19 +36,18 @@ public class Task {
     private enTaskStatus  status;
     private ProductLine assignedLine;
 
-    public Task(int id, int productID, int requiredQuantity, int clientID,
-                LocalDate startDate, LocalDate dueDate, enTaskStatus status, ProductLine assignedLine) {
+    public Task(int id, int productID, int requiredProductQuantity, LocalDate startDate, ProductLine productLine, int achievedProductQuantity, int clientID, LocalDate endDate, enTaskStatus status, ProductLine assignedLine) {
         this.id = id;
         this.productID = productID;
-        this.requiredProductQuantity = requiredQuantity;
-        this.clientID = clientID;
+        this.requiredProductQuantity = requiredProductQuantity;
         this.startDate = startDate;
-        this.endDate = dueDate;
+        this.productLine = productLine;
+        this.achievedProductQuantity = achievedProductQuantity;
+        this.clientID = clientID;
+        this.endDate = endDate;
         this.status = status;
         this.assignedLine = assignedLine;
-        this.achievedProductQuantity = 0;
     }
-
 
     public ProductLine getAssignedLine() {
         return assignedLine;
@@ -85,10 +85,14 @@ public class Task {
         return id;
     }
 
-
-
     public double getCompletionRate() {
         return (double)(achievedProductQuantity * 100) / requiredProductQuantity;
+    }
+
+    public void run() {
+
+        productLine.setAvailable(false);
+
     }
 
 }
