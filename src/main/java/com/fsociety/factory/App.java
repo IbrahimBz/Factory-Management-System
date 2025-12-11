@@ -8,7 +8,7 @@ import com.fsociety.factory.dataAccessLayer.AccessItems;
 public class App {
     public static void main(String[] args) {
         System.out.println(
-                AccessItems.getItems()
+                AccessItems.loadItemsFromCSVFile()
 
         );
     }

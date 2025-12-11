@@ -13,7 +13,7 @@ public class AppTest
 {
 
     public void testItemsIO() {
-        AccessItems.getItems();
+        AccessItems.loadItemsFromCSVFile();
     }
 
     /**

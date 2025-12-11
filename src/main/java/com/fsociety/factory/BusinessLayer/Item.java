@@ -2,6 +2,9 @@ package com.fsociety.factory.BusinessLayer;
 
 import com.fsociety.factory.dataAccessLayer.AccessItems;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Item {
 
     // This static field holds the highest ID used so far
@@ -35,6 +38,7 @@ public class Item {
     private Item(int id, String name, int categoryID, double price, int availableQuantity, int minAllowedQuantity) {
         this.id = id;
         this.name = name;
+
         this.categoryID = categoryID;
         this.price = price;
         this.availableQuantity = availableQuantity;
@@ -46,6 +50,11 @@ public class Item {
         int id = AccessItems.addItem(this.name,this.categoryID,this.price,this.availableQuantity,this.minAllowedQuantity);
         return (id != -1);
     }
+
+    private boolean _Update() {
+        return AccessItems.updateItem(this.id,this.name,this.categoryID,this.price,this.availableQuantity,this.minAllowedQuantity);
+    }
+
 
     public Item() {
         this.id = -1;
@@ -63,12 +72,54 @@ public class Item {
             case ADDNEW:
                 return _AddNew();
             case UPDATE:
-                //Update method
+                return _Update();
             default:
                 return false;
         }
     }
 
+    public static boolean deleteItem(int id) {
+        return AccessItems.deleteItem(id);
+    }
+    public static Item findByID(int id) {
+
+        String[] record = AccessItems.findByID(id);;
+
+        if(record == null ) return null;
+        return new Item(Integer.parseInt(record[0]),record[1],Integer.parseInt(record[2])
+                ,Double.parseDouble(record[3]),Integer.parseInt(record[4]),Integer.parseInt(record[5]));
+
+
+    }
+    public static Item findByName(String name) {
+
+
+        String[] record = AccessItems.findByName(name);
+
+        if(record == null ) return null;
+        return new Item(Integer.parseInt(record[0]),record[1],Integer.parseInt(record[2])
+                ,Double.parseDouble(record[3]),Integer.parseInt(record[4]),Integer.parseInt(record[5]));
+
+
+    }
+    public static List<Item> findByCategoryID(int categoryID) {
+        List<String[]> itemsRecords = AccessItems.findItemsByCategory(categoryID);
+
+        if(itemsRecords.size() <= 1 || itemsRecords == null) return null;
+
+        List<Item> items = new ArrayList<>();
+
+        for(int i = 0; i < itemsRecords.size();i++) {
+            String[] record = itemsRecords.get(i);
+            items.add(new Item(Integer.parseInt(record[0]),record[1],Integer.parseInt(record[2])
+                    ,Double.parseDouble(record[3]),Integer.parseInt(record[4]),Integer.parseInt(record[5])));
+
+        }
+        return items;
+
+    }
+
+    // Getters and Setters
 
     public int getId() {
         return id;

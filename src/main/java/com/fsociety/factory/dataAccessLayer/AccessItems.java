@@ -1,12 +1,10 @@
 package com.fsociety.factory.dataAccessLayer;
 
-import com.fsociety.factory.BusinessLayer.Item;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVRecord;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -29,26 +27,20 @@ public class AccessItems {
                 while ((record = reader.readNext()) != null) {
 
                     currentMaxID = Integer.parseInt(record[0]);
-
                 }
 
-
-            } catch (IOException | CsvValidationException e) {
-                e.printStackTrace();
+            } catch (IOException | CsvValidationException ex) {
+                ErrorLogger.logError(ex.getMessage());
             }
-
-
         }
 
         return ++currentMaxID;
-
     }
 
 
-    public static List<String[]> getItems() {
+    public static List<String[]> loadItemsFromCSVFile() {
 
         List<String[]> items = new ArrayList<String[]>();
-
 
         try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
 
@@ -70,6 +62,21 @@ public class AccessItems {
         return items;
     }
 
+    public static boolean loadItemsToCSVFile(List<String[]> items) {
+
+        try(CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
+
+            writer.writeAll(items);
+
+        }
+        catch (IOException ex) {
+            ErrorLogger.logError(ex.getMessage());
+        }
+
+        return false;
+
+    }
+
 
     public static int addItem(String name, int categoryID, double price, int availableQuantity, int minAllowedQuantity) {
         try (FileWriter writer = new FileWriter(filePath, true)) {
@@ -84,9 +91,96 @@ public class AccessItems {
 
             return id;
         }
-        catch (IOException e) {
-            e.printStackTrace();
+        catch (IOException ex) {
+            ErrorLogger.logError(ex.getMessage());
+
         }
         return -1;
     }
+
+    public static boolean updateItem(int id, String name, int categoryID, double price, int availableQuantity, int minAllowedQuantity) {
+
+        String [] updatedRecord = {Integer.toString(id), Integer.toString(categoryID), Double.toString(price), Integer.toString(availableQuantity), Integer.toString(minAllowedQuantity)};
+
+        List<String[]> items = loadItemsFromCSVFile();
+
+        for(int i = 0;i < items.size(); i++) {
+
+            if(Integer.parseInt(items.get(i)[0]) == id ) {
+
+                items.remove(i);
+                items.add(updatedRecord);
+                return loadItemsToCSVFile(items);
+
+            }
+
+        }
+
+        return false;
+    }
+
+    public static boolean deleteItem(int id) {
+        List<String[]> items = loadItemsFromCSVFile();
+
+        for(int i = 0;i < items.size(); i++) {
+
+            if(Integer.parseInt(items.get(i)[0]) == id ) {
+
+                items.remove(i);
+                return loadItemsToCSVFile(items);
+
+            }
+        }
+        return false;
+    }
+
+    public static String[] findByID(int id) {
+
+        List<String[]> items = loadItemsFromCSVFile();
+
+        for(int i = 0;i < items.size(); i++) {
+
+            if(Integer.parseInt(items.get(i)[0]) == id ) {
+
+                return items.get(i);
+
+            }
+        }
+        return null;
+
+    }
+
+    public static String[] findByName(String name) {
+
+        List<String[]> items = loadItemsFromCSVFile();
+
+        for(int i = 0;i < items.size(); i++) {
+
+            if(items.get(i)[1] == name ) {
+
+                return items.get(i);
+
+            }
+        }
+        return null;
+
+    }
+
+    public static List<String[]> findItemsByCategory(int categoryID) {
+
+        List<String[]> items = loadItemsFromCSVFile();
+        List<String[]> categorizedItems = new ArrayList<>();
+
+        for(int i = 0;i < items.size(); i++) {
+
+            if(Integer.parseInt(items.get(i)[2]) == categoryID ) {
+
+                categorizedItems.add(items.get(i));
+
+            }
+        }
+        return categorizedItems;
+
+    }
+
 }

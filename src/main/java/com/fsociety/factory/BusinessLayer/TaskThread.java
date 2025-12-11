@@ -6,25 +6,6 @@ import java.time.LocalDate;
 
 public class TaskThread extends Thread {
 
-    public static enum enTaskStatus {
-                PENDING,        // المهمة لم تبدأ بعد
-                IN_PROGRESS,    // قيد التنفيذ
-                COMPLETED,      // مكتملة
-                CANCELLED,      // ملغاة
-                DELIVERED;      // تم التسليم
-
-        @Override
-        public String toString() {
-            switch (this) {
-                case PENDING: return "Pending";
-                case IN_PROGRESS: return "In Progress";
-                case COMPLETED: return "Completed";
-                case CANCELLED: return "Cancelled";
-                case DELIVERED: return "Delivered";
-                default: return super.toString();
-            }
-        }
-    }
 
 
     private int id;
@@ -35,10 +16,10 @@ public class TaskThread extends Thread {
     private int clientID;
     private LocalDate startDate;
     private LocalDate endDate;
-    private enTaskStatus  status;
+    private int statusID;
     private ProductLine assignedLine;
 
-    public TaskThread(int id, int productID, int requiredProductQuantity, LocalDate startDate, ProductLine productLine, int achievedProductQuantity, int clientID, LocalDate endDate, enTaskStatus status, ProductLine assignedLine) {
+    public TaskThread(int id, int productID, int requiredProductQuantity, LocalDate startDate, ProductLine productLine, int achievedProductQuantity, int clientID, LocalDate endDate, int statusID, ProductLine assignedLine) {
         this.id = id;
         this.productID = productID;
         this.requiredProductQuantity = requiredProductQuantity;
@@ -47,7 +28,7 @@ public class TaskThread extends Thread {
         this.achievedProductQuantity = achievedProductQuantity;
         this.clientID = clientID;
         this.endDate = endDate;
-        this.status = status;
+        this.statusID = statusID;
         this.assignedLine = assignedLine;
     }
 
@@ -71,8 +52,8 @@ public class TaskThread extends Thread {
         return endDate;
     }
 
-    public enTaskStatus getStatus() {
-        return status;
+    public int getStatusID() {
+        return statusID;
     }
 
     public int getClientID() {
