@@ -65,6 +65,7 @@ public class EditLineStatusPanel extends JPanel {
         updateButton.setFont( new Font( "Arial" , Font.BOLD , 16));
         updateButton.setBackground( new Color(52 ,152 , 219));
         updateButton.setForeground(Color.WHITE);
+        updateButton.setFocusPainted(false);
         gbc.gridx = 0 ;
         gbc.gridy =3 ;
         gbc.gridwidth = 2 ;
