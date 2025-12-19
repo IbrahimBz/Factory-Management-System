@@ -22,7 +22,7 @@ public class AddProductionLinePanel extends JPanel {
 
         gbc.gridx = 0 ;
         gbc.gridy = 0 ;
-        gbc.gridwidth = 2 ;
+        gbc.gridwidth = 3 ;
         gbc.anchor = GridBagConstraints.CENTER;
 
         add(titleLabel , gbc );
@@ -49,7 +49,7 @@ public class AddProductionLinePanel extends JPanel {
         add(nameLabel,gbc);
 
         lineNameField = new JTextField(20);
-        gbc.gridx =1 ;
+        gbc.gridx = 1 ;
         gbc.gridy = 2 ;
         add(lineNameField , gbc);
 
@@ -67,7 +67,7 @@ public class AddProductionLinePanel extends JPanel {
         //***
         statusComboBox = new JComboBox<>(statuses);
         statusComboBox.setPreferredSize( new Dimension(200 ,30));
-
+        statusComboBox.setBackground(new Color(104, 108, 162));
         gbc.gridx = 1 ;
         gbc.gridy = 3 ;
         add( statusComboBox , gbc);

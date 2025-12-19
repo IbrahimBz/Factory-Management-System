@@ -1,11 +1,15 @@
 package com.fsociety.factory.UI_Swing_PresentationLayer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class EditLineStatusPanel extends JPanel {
 
     private static final String[] MOCK_PRODUCTION_LINES = { " line one " , " line two " , " line three " };// should be changed and get the lines from the system
+    private static final Log log = LogFactory.getLog(EditLineStatusPanel.class);
 
     private JComboBox<String> lineSelectorComboBox ;
     private JComboBox<String> statusComboBox ;
@@ -40,6 +44,7 @@ public class EditLineStatusPanel extends JPanel {
 
         lineSelectorComboBox = new JComboBox<>(MOCK_PRODUCTION_LINES);
         lineSelectorComboBox.setPreferredSize(new Dimension(250 ,30 ));
+        lineSelectorComboBox.setBackground(new Color(104, 108, 162));
         gbc.gridx =1;
         gbc.gridy = 1 ;
         add(lineSelectorComboBox, gbc);
@@ -56,6 +61,7 @@ public class EditLineStatusPanel extends JPanel {
         String[] statuses = { " Active " , " Stopped " , " maintenance "};
         statusComboBox = new JComboBox<>(statuses);
         statusComboBox.setPreferredSize( new Dimension( 250 , 30 ));
+        statusComboBox.setBackground(new Color(104, 108, 162));
         gbc.gridx = 1;
         gbc.gridy = 2;
         add(statusComboBox , gbc);

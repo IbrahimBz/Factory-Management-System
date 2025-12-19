@@ -26,27 +26,25 @@ public class ManagerDashboard extends JFrame {
     //***************************************************************************
    public ManagerDashboard(){
 
-       this.setDefaultCloseOperation(this.EXIT_ON_CLOSE);
-    // this.setResizable(false);
-       this.setTitle(" Manager Dashboard ");
        this.setLocationRelativeTo(null);
-       this.setVisible(true);
+       this.setLocation(100,50);
+       this.setDefaultCloseOperation(this.EXIT_ON_CLOSE);
+    // this.setResizable(false);             //   *********** off ************
+       this.setTitle(" Manager Dashboard ");
        this.setSize( FRAME_WIDTH,  FRAME_HEIGHT);
-
        //------------------------------
         JPanel navigationPanel = createNavigationPanel();
        this.add(navigationPanel , BorderLayout.WEST);
-
        //------------------------------
        cardLayout = new CardLayout();
        contentPanel = new JPanel(cardLayout);
        addInitialCards(contentPanel);
        this.add(contentPanel ,BorderLayout.CENTER);
-
        //------------------------------
-
        cardLayout.show(contentPanel, DEFAULT_CARD);
-
+       //*********************
+       this.setVisible(true);
+       //*********************
    }
     //***************************************************************************
    private JPanel createNavigationPanel(){
@@ -112,9 +110,12 @@ public class ManagerDashboard extends JFrame {
 
 
         JPanel defaultView = new JPanel();
-
-        ImageIcon icon = new ImageIcon();                   //************ remember add icon *****************
-        JLabel label = new JLabel(icon);
+        defaultView.setLayout(new GridLayout());
+        defaultView.setBackground(Color.WHITE);
+        ImageIcon icon = new ImageIcon(ManagerDashboard.class.getResource("/images/manager_image.jpeg"));                   //************ remember add icon *****************
+        Image scaledImage = icon.getImage().getScaledInstance(1000, 800,Image.SCALE_SMOOTH);
+        ImageIcon scaledIcon = new ImageIcon(scaledImage);
+        JLabel label = new JLabel(scaledIcon);
         defaultView.add(label);
         panel.add(defaultView, DEFAULT_CARD);
 
