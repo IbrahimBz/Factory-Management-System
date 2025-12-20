@@ -14,11 +14,10 @@ import java.util.stream.Collectors;
  */
 public class User {
 
-    // 1. Enum لتحديد الأدوار بشكل آمن (Type-Safe)
     public enum UserRole {
         MANAGER,
         PRODUCTION_SUPERVISOR,
-        UNKNOWN; // دور افتراضي في حال وجود قيمة غير متوقعة في الملف
+        UNKNOWN;
 
         public static UserRole fromString(String roleString) {
             try {
@@ -58,7 +57,7 @@ public class User {
             return new User(id, name, hash, role);
 
         } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-            ErrorLogger.logError(e.getMessage());
+            ErrorLogger.logError(e);
             return null;
         }
     }
@@ -107,32 +106,23 @@ public class User {
                 );
                 users.add(user);
             } catch (Exception e) {
-                ErrorLogger.logError(e.toString());
+                ErrorLogger.logError(e);
             }
         }
         return users;
     }
 
-    /**
-     * [الجديد] دالة منطق العمل لحذف مستخدم.
-     * @param userIdToDelete الـ ID الخاص بالمستخدم المراد حذفه.
-     * @return true إذا تم الحذف بنجاح، وإلا false.
-     */
     public static boolean deleteUser(int userIdToDelete) {
-        // 1. اقرأ جميع المستخدمين الحاليين
         List<String[]> allUserRecords = UserDataAccess.loadAllUsers();
 
-        // 2. قم بتصفية القائمة لإزالة المستخدم الذي نريد حذفه
         List<String[]> updatedUserRecords = allUserRecords.stream()
                 .filter(record -> Integer.parseInt(record[0]) != userIdToDelete)
                 .collect(Collectors.toList());
 
-        // 3. إذا كان حجم القائمة لم يتغير، فهذا يعني أن المستخدم لم يتم العثور عليه
         if (allUserRecords.size() == updatedUserRecords.size()) {
-            return false; // المستخدم غير موجود
+            return false;
         }
 
-        // 4. احفظ القائمة المحدثة مرة أخرى في الملف
         return UserDataAccess.saveAllUsers(updatedUserRecords);
     }
 

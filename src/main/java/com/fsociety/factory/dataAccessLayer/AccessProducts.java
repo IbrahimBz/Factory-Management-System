@@ -41,7 +41,7 @@ public class AccessProducts {
                 currentMaxProductID = Math.max(currentMaxProductID, Integer.parseInt(record[0]));
             }
         } catch (IOException | CsvValidationException ex) {
-            ErrorLogger.logError("Error initializing Product IDs: " + ex.getMessage());
+            ErrorLogger.logError(ex);
         }
 
         // Initialize Requirement ID (scanning REQUIREMENTS_FILE_PATH)
@@ -52,7 +52,7 @@ public class AccessProducts {
                 currentMaxRequirementID = Math.max(currentMaxRequirementID, Integer.parseInt(record[0]));
             }
         } catch (IOException | CsvValidationException ex) {
-            ErrorLogger.logError("Error initializing Requirement IDs: " + ex.getMessage());
+            ErrorLogger.logError(ex);
         }
     }
 
@@ -78,7 +78,7 @@ public class AccessProducts {
                 records.add(record);
             }
         } catch (IOException | CsvValidationException e) {
-            ErrorLogger.logError("Error loading CSV: " + filePath + " " + e.getMessage());
+            ErrorLogger.logError(e);
         }
         return records;
     }
@@ -90,7 +90,7 @@ public class AccessProducts {
             writer.writeAll(records);
             return true;
         } catch (IOException ex) {
-            ErrorLogger.logError("Error writing CSV: " + filePath + " " + ex.getMessage());
+            ErrorLogger.logError(ex);
             return false;
         }
     }
@@ -110,7 +110,7 @@ public class AccessProducts {
             printer.flush();
             return id;
         } catch (IOException ex) {
-            ErrorLogger.logError("Error adding product: " + ex.getMessage());
+            ErrorLogger.logError(ex);
             return -1;
         }
     }
@@ -129,7 +129,7 @@ public class AccessProducts {
             printer.flush();
             return true;
         } catch (IOException ex) {
-            ErrorLogger.logError("Error adding requirement: " + ex.getMessage());
+            ErrorLogger.logError(ex);
             return false;
         }
     }

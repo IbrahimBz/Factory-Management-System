@@ -3,184 +3,142 @@ package com.fsociety.factory.dataAccessLayer;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 
 public class AccessItems {
 
-    private static String filePath = "src//main//resources//dataFiles//items.csv";
-
-    private static int currentMaxID = -1;
-
-    private static int generateID() {
-        if(currentMaxID == -1) {
-            try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
-
-                String[] record;
-
-                reader.readNext();
-
-                while ((record = reader.readNext()) != null) {
-
-                    currentMaxID = Integer.parseInt(record[0]);
-                }
-
-            } catch (IOException | CsvValidationException ex) {
-                ErrorLogger.logError(ex.getMessage());
-            }
-        }
-
-        return ++currentMaxID;
-    }
-
+    private static final String FILE_PATH = "src/main/resources/dataFiles/items.csv";
+    private static final String[] HEADER = {"itemID", "itemName", "categoryID", "price", "availableQuantity", "minAllowedQuantity"};
 
     public static List<String[]> loadItemsFromCSVFile() {
-
-        List<String[]> items = new ArrayList<String[]>();
-
-        try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
-
-            String[] record;
-
-            reader.readNext();
-
-            while ((record = reader.readNext()) != null) {
-
-                items.add(record);
-
-            }
-
-
-        } catch (IOException | CsvValidationException e) {
-            e.printStackTrace();
+        List<String[]> items = new ArrayList<>();
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            return items;
         }
 
+        try (CSVReader reader = new CSVReader(new FileReader(file))) {
+            reader.readNext(); // تخطي سطر العناوين
+            String[] record;
+            while ((record = reader.readNext()) != null) {
+                items.add(record);
+            }
+        } catch (IOException | CsvValidationException e) {
+        }
         return items;
     }
 
-    public static boolean loadItemsToCSVFile(List<String[]> items) {
 
-        try(CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
-
+    private static boolean saveAllItemsToCSVFile(List<String[]> items) {
+        try (CSVWriter writer = new CSVWriter(new FileWriter(FILE_PATH))) {
+            writer.writeNext(HEADER); // الخطوة الأهم: كتابة العناوين دائماً
             writer.writeAll(items);
+            return true;
+        } catch (IOException ex) {
+            ErrorLogger.logError(ex);
 
+            return false;
         }
-        catch (IOException ex) {
-            ErrorLogger.logError(ex.getMessage());
-        }
-
-        return false;
-
     }
 
 
     public static int addItem(String name, int categoryID, double price, int availableQuantity, int minAllowedQuantity) {
-        try (FileWriter writer = new FileWriter(filePath, true)) {
+        List<String[]> allItems = loadItemsFromCSVFile();
 
-            CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT);
-            int id = generateID();
+        int newId = allItems.stream()
+                .mapToInt(record -> Integer.parseInt(record[0]))
+                .max()
+                .orElse(0) + 1;
 
-            printer.printRecord(Integer.toString(id), name, Integer.toString(categoryID), Double.toString(price),
-                    Integer.toString(availableQuantity),Integer.toString(minAllowedQuantity));
+        String[] newRecord = {
+                String.valueOf(newId),
+                name,
+                String.valueOf(categoryID),
+                String.valueOf(price),
+                String.valueOf(availableQuantity),
+                String.valueOf(minAllowedQuantity)
+        };
 
-            printer.flush();
+        allItems.add(newRecord);
 
-            return id;
+        if (saveAllItemsToCSVFile(allItems)) {
+            return newId;
+        } else {
+            return -1;
         }
-        catch (IOException ex) {
-            ErrorLogger.logError(ex.getMessage());
-
-        }
-        return -1;
     }
+
 
     public static boolean updateItem(int id, String name, int categoryID, double price, int availableQuantity, int minAllowedQuantity) {
+        List<String[]> allItems = loadItemsFromCSVFile();
+        boolean itemFound = false;
 
-        String [] updatedRecord = {Integer.toString(id), Integer.toString(categoryID), Double.toString(price), Integer.toString(availableQuantity), Integer.toString(minAllowedQuantity)};
-
-        List<String[]> items = loadItemsFromCSVFile();
-
-        for(int i = 0;i < items.size(); i++) {
-
-            if(Integer.parseInt(items.get(i)[0]) == id ) {
-
-                items.remove(i);
-                items.add(updatedRecord);
-                return loadItemsToCSVFile(items);
-
+        for (int i = 0; i < allItems.size(); i++) {
+            if (Integer.parseInt(allItems.get(i)[0]) == id) {
+                allItems.set(i, new String[]{
+                        String.valueOf(id),
+                        name,
+                        String.valueOf(categoryID),
+                        String.valueOf(price),
+                        String.valueOf(availableQuantity),
+                        String.valueOf(minAllowedQuantity)
+                });
+                itemFound = true;
+                break;
             }
-
         }
 
-        return false;
+        if (itemFound) {
+            return saveAllItemsToCSVFile(allItems);
+        } else {
+            return false;
+        }
     }
+
 
     public static boolean deleteItem(int id) {
-        List<String[]> items = loadItemsFromCSVFile();
+        List<String[]> allItems = loadItemsFromCSVFile();
+        boolean removed = allItems.removeIf(record -> Integer.parseInt(record[0]) == id);
 
-        for(int i = 0;i < items.size(); i++) {
-
-            if(Integer.parseInt(items.get(i)[0]) == id ) {
-
-                items.remove(i);
-                return loadItemsToCSVFile(items);
-
-            }
+        if (removed) {
+            return saveAllItemsToCSVFile(allItems);
+        } else {
+            return false;
         }
-        return false;
     }
+
 
     public static String[] findByID(int id) {
-
-        List<String[]> items = loadItemsFromCSVFile();
-
-        for(int i = 0;i < items.size(); i++) {
-
-            if(Integer.parseInt(items.get(i)[0]) == id ) {
-
-                return items.get(i);
-
-            }
-        }
-        return null;
-
+        return loadItemsFromCSVFile().stream()
+                .filter(record -> Integer.parseInt(record[0]) == id)
+                .findFirst()
+                .orElse(null);
     }
+
 
     public static String[] findByName(String name) {
-
-        List<String[]> items = loadItemsFromCSVFile();
-
-        for(int i = 0;i < items.size(); i++) {
-
-            if(items.get(i)[1] == name ) {
-
-                return items.get(i);
-
-            }
-        }
-        return null;
-
+        return loadItemsFromCSVFile().stream()
+                .filter(record -> record.length > 1 && Objects.equals(record[1], name))
+                .findFirst()
+                .orElse(null);
     }
 
+
     public static List<String[]> findItemsByCategory(int categoryID) {
-
-        List<String[]> items = loadItemsFromCSVFile();
         List<String[]> categorizedItems = new ArrayList<>();
-
-        for(int i = 0;i < items.size(); i++) {
-
-            if(Integer.parseInt(items.get(i)[2]) == categoryID ) {
-
-                categorizedItems.add(items.get(i));
-
+        for (String[] record : loadItemsFromCSVFile()) {
+            if (record.length > 2 && Integer.parseInt(record[2]) == categoryID) {
+                categorizedItems.add(record);
             }
         }
         return categorizedItems;
-
     }
-
 }

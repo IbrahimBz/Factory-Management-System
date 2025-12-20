@@ -1,5 +1,7 @@
-package com.fsociety.factory.BusinessLayer;
+package com.fsociety.factory.BusinessLayer.Production;
 
+import com.fsociety.factory.BusinessLayer.Task;
+import com.fsociety.factory.BusinessLayer.Util;
 import com.fsociety.factory.dataAccessLayer.AccessProductLine;
 
 import java.util.ArrayList;
@@ -11,7 +13,7 @@ public class ProductLine {
     private String name;
     private int statusID;
     private String statusName; // Helper field for display
-    private List<TaskThread> tasks;
+    private List<Task> tasks;
 
     // Note: 'isAvailable' is derived from statusID usually, but kept as requested
     private boolean isAvailable;
@@ -116,7 +118,7 @@ public class ProductLine {
 
     // --- Other Business Logic ---
 
-    public void addTask(TaskThread task) {
+    public void addTask(Task task) {
         tasks.add(task);
     }
 
@@ -135,7 +137,7 @@ public class ProductLine {
 
     public String getStatusName() { return statusName; }
 
-    public List<TaskThread> getTasks() { return tasks; }
+    public List<Task> getTasks() { return tasks; }
 
     public boolean isAvailable() { return isAvailable; }
     public void setAvailable(boolean available) { isAvailable = available; }

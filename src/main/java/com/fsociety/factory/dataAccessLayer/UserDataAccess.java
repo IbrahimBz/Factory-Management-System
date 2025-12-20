@@ -37,7 +37,7 @@ public class UserDataAccess {
                     }
                 }
             } catch (IOException | CsvValidationException | NumberFormatException ex) {
-                ErrorLogger.logError(ex.toString());
+                ErrorLogger.logError(ex);
             }
         }
         return ++currentMaxID;
@@ -59,7 +59,7 @@ public class UserDataAccess {
                 }
             }
         } catch (IOException | CsvValidationException e) {
-            ErrorLogger.logError(e.toString());
+            ErrorLogger.logError(e);
         }
 
         return null;
@@ -81,7 +81,7 @@ public class UserDataAccess {
             return newId;
 
         } catch (IOException ex) {
-            ErrorLogger.logError(ex.toString());
+            ErrorLogger.logError(ex);
             return -1; // فشلت عملية الإضافة
         }
     }
@@ -96,7 +96,7 @@ public class UserDataAccess {
                 users.add(record);
             }
         } catch (IOException | CsvValidationException e) {
-            ErrorLogger.logError(e.toString());
+            ErrorLogger.logError(e);
         }
         return users;
     }
@@ -109,7 +109,7 @@ public class UserDataAccess {
             writer.writeAll(users);
             return true;
         } catch (IOException ex) {
-            ErrorLogger.logError(ex.toString());
+            ErrorLogger.logError(ex);
         }
             return false;
     }

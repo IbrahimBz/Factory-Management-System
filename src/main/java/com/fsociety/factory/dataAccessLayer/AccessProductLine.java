@@ -37,7 +37,7 @@ public class AccessProductLine {
                     }
                 }
             } catch (IOException | CsvValidationException ex) {
-                ErrorLogger.logError(ex.getMessage());
+                ErrorLogger.logError(ex);
             }
         }
         return ++currentMaxID;
@@ -54,7 +54,7 @@ public class AccessProductLine {
                 lines.add(record);
             }
         } catch (IOException | CsvValidationException e) {
-            ErrorLogger.logError(e.getMessage());
+            ErrorLogger.logError(e);
         }
         return lines;
     }
@@ -69,7 +69,7 @@ public class AccessProductLine {
                 statuses.put(Integer.parseInt(record[0]), record[1]);
             }
         } catch (IOException | CsvValidationException e) {
-            ErrorLogger.logError(e.getMessage());
+            ErrorLogger.logError(e);
 
         }
         return statuses;
@@ -86,7 +86,7 @@ public class AccessProductLine {
             writer.writeAll(lines);
             return true;
         } catch (IOException ex) {
-            ErrorLogger.logError(ex.getMessage());
+            ErrorLogger.logError(ex);
 
             return false;
         }
@@ -107,7 +107,7 @@ public class AccessProductLine {
             printer.flush();
             return id;
         } catch (IOException ex) {
-            ErrorLogger.logError(ex.getMessage());
+            ErrorLogger.logError(ex);
 
             return -1;
         }

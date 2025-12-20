@@ -1,6 +1,6 @@
 package com.fsociety.factory.BusinessLayer_Test;
 
-import com.fsociety.factory.BusinessLayer.Item;
+import com.fsociety.factory.BusinessLayer.Inventory.Item;
 
 public class TestItems {
 
