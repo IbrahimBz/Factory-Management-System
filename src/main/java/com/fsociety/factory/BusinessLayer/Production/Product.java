@@ -5,22 +5,14 @@ import com.fsociety.factory.BusinessLayer.Inventory.Item;
 import com.fsociety.factory.BusinessLayer.Util;
 import com.fsociety.factory.dataAccessLayer.AccessProducts;
 import com.fsociety.factory.dataAccessLayer.ErrorLogger;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-// Assuming the Item class exists and has a public int getId() method.
+import java.util.*;
 
 public class Product {
     private int id;
     private String name;
     private int quantityInStock;
-    // itemID, quantity
     private Map<Integer, Integer> requiredItems;
-    private Util.enObjectMode mode;
-
+    private final Util.enObjectMode mode;
 
     private Product(int id, String name, int quantityInStock) {
         this.id = id;
@@ -28,7 +20,7 @@ public class Product {
         this.quantityInStock = quantityInStock;
         this.requiredItems = new HashMap<>();
         this.mode = Util.enObjectMode.UPDATE;
-        _LoadRequirements(); // Load the related data when the object is instantiated
+        _LoadRequirements();
     }
 
     public Product() {
@@ -41,15 +33,11 @@ public class Product {
 
     private void _LoadRequirements() {
         List<String[]> reqs = AccessProducts.findRequirementsByProductID(this.id);
-
         for (String[] req : reqs) {
-            // req[1] = itemID, req[3] = itemsQuantity
             try {
                 int itemID = Integer.parseInt(req[1]);
                 int quantity = Integer.parseInt(req[3]);
-
-                this.requiredItems.put(itemID,quantity);
-
+                this.requiredItems.put(itemID, quantity);
             } catch (Exception e) {
                 ErrorLogger.logError(e);
             }
@@ -57,47 +45,30 @@ public class Product {
     }
 
     private boolean _AddNew() {
-        int newId = AccessProducts.addProductRecord(this.name, this.quantityInStock);
-
+        int newId = AccessProducts.addProduct(this.name, this.quantityInStock);
         if (newId == -1) return false;
         this.id = newId;
 
-        // 2. Add all associated requirement records
-        boolean reqsSaved = true;
+        boolean allReqsSaved = true;
         for (Map.Entry<Integer, Integer> entry : this.requiredItems.entrySet()) {
-            boolean success = AccessProducts.addRequirementRecord(
-                    this.id,
-                    entry.getKey(),
-                    entry.getValue()
-            );
-            if (!success) reqsSaved = false;
+            boolean success = AccessProducts.addRequirement(this.id, entry.getKey(), entry.getValue());
+            if (!success) allReqsSaved = false;
         }
-
-        return reqsSaved;
+        return allReqsSaved;
     }
 
     private boolean _Update() {
-        boolean productUpdated = AccessProducts.updateProduct(
-                this.id,
-                this.name,
-                this.quantityInStock
-        );
-
+        boolean productUpdated = AccessProducts.updateProduct(this.id, this.name, this.quantityInStock);
         if (!productUpdated) return false;
 
         AccessProducts.deleteRequirementsByProductID(this.id);
 
-        boolean reqsSaved = true;
+        boolean allReqsSaved = true;
         for (Map.Entry<Integer, Integer> entry : this.requiredItems.entrySet()) {
-            boolean success = AccessProducts.addRequirementRecord(
-                    this.id,
-                    entry.getKey(),
-                    entry.getValue()
-            );
-            if (!success) reqsSaved = false;
+            boolean success = AccessProducts.addRequirement(this.id, entry.getKey(), entry.getValue());
+            if (!success) allReqsSaved = false;
         }
-
-        return reqsSaved;
+        return allReqsSaved;
     }
 
     public boolean save() {
@@ -111,19 +82,41 @@ public class Product {
         }
     }
 
-    public boolean checkItemsQuantityToMake1Product() {
-
-        for(Map.Entry<Integer, Integer> reqItem: requiredItems.entrySet()) {
-
-            Optional<Item> item = Inventory.getInstance().findItemByIdInMemory(reqItem.getKey());
-
-            if( !item.isPresent() || reqItem.getValue() < item.get().getAvailableQuantity()) return false;
-
+    public boolean canProduceQuantity(int quantityToProduce) {
+        // إذا لم تكن هناك متطلبات، يمكن الإنتاج دائماً
+        if (requiredItems.isEmpty()) {
+            return true;
         }
+
+        Inventory inventory = Inventory.getInstance();
+
+        // قم بالمرور على كل مادة خام مطلوبة
+        for (Map.Entry<Integer, Integer> requirement : requiredItems.entrySet()) {
+            int itemId = requirement.getKey();
+            int quantityPerUnit = requirement.getValue();
+
+            // حساب إجمالي الكمية المطلوبة من هذه المادة الخام
+            long totalRequired = (long) quantityPerUnit * quantityToProduce;
+
+            // البحث عن المادة الخام في المخزون
+            Optional<Item> itemOpt = inventory.findItemByIdInMemory(itemId);
+
+            if (itemOpt.isPresent()) {
+                Item itemInStock = itemOpt.get();
+                // التحقق: هل الكمية المتوفرة في المخزون أقل من الإجمالي المطلوب؟
+                if (itemInStock.getAvailableQuantity() < totalRequired) {
+                    // إذا كانت مادة واحدة غير كافية، أرجع false فوراً
+                    return false;
+                }
+            } else {
+                // إذا كانت المادة الخام غير موجودة في المخزون أصلاً، لا يمكن الإنتاج
+                return false;
+            }
+        }
+
+        // إذا اكتملت الحلقة دون مشاكل، فهذا يعني أن جميع المواد متوفرة
         return true;
-
     }
-
 
     public static boolean deleteProduct(int id) {
         return AccessProducts.deleteProduct(id);
@@ -132,8 +125,6 @@ public class Product {
     public static Product findByID(int id) {
         String[] productData = AccessProducts.findProductByID(id);
         if (productData == null) return null;
-
-        // Map data: productID (0), productName (1), productQuantity (2)
         return new Product(
                 Integer.parseInt(productData[0]),
                 productData[1],
@@ -144,7 +135,6 @@ public class Product {
     public static Product findByName(String name) {
         String[] productData = AccessProducts.findProductByName(name);
         if (productData == null) return null;
-
         return new Product(
                 Integer.parseInt(productData[0]),
                 productData[1],
@@ -152,13 +142,22 @@ public class Product {
         );
     }
 
-
-
-
-
-
-    // --- Getters and Setters ---
-    // (Ensure you copy the setters from your Item class if they are not shown here)
+    public static List<Product> getAllProducts() {
+        List<Product> products = new ArrayList<>();
+        List<String[]> records = AccessProducts.loadAllProducts();
+        for (String[] record : records) {
+            try {
+                products.add(new Product(
+                        Integer.parseInt(record[0]),
+                        record[1],
+                        Integer.parseInt(record[2])
+                ));
+            } catch (NumberFormatException e) {
+                ErrorLogger.logError(e);
+            }
+        }
+        return products;
+    }
 
     public int getId() { return id; }
     public String getName() { return name; }
@@ -167,9 +166,13 @@ public class Product {
     public void setQuantityInStock(int quantityInStock) { this.quantityInStock = quantityInStock; }
     public Map<Integer, Integer> getRequiredItems() { return requiredItems; }
     public Util.enObjectMode getMode() { return mode; }
-
-    // Custom setter to add a new requirement
     public void addRequiredItem(int itemId, int quantity) {
         this.requiredItems.put(itemId, quantity);
     }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
+
 }

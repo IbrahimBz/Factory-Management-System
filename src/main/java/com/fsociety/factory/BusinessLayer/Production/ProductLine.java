@@ -1,53 +1,38 @@
 package com.fsociety.factory.BusinessLayer.Production;
 
-import com.fsociety.factory.BusinessLayer.Task;
 import com.fsociety.factory.BusinessLayer.Util;
-import com.fsociety.factory.dataAccessLayer.AccessProductLine;
-
+import com.fsociety.factory.dataAccessLayer.AccessTask;
+import com.fsociety.factory.dataAccessLayer.ErrorLogger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ProductLine {
 
     private int id;
     private String name;
     private int statusID;
-    private String statusName; // Helper field for display
-    private List<Task> tasks;
+    private final Util.enObjectMode mode;
+    private final AtomicReference<Task> currentTask = new AtomicReference<>(null);
 
-    // Note: 'isAvailable' is derived from statusID usually, but kept as requested
-    private boolean isAvailable;
 
-    private Util.enObjectMode mode;
-
-    // --- Private Constructor for Loading (Update Mode) ---
     private ProductLine(int id, String name, int statusID) {
         this.id = id;
         this.name = name;
         this.statusID = statusID;
-        this.statusName = AccessProductLine.getStatusName(statusID);
-        this.tasks = new ArrayList<>();
         this.mode = Util.enObjectMode.UPDATE;
-
-        // Simple logic: If statusID is 1 (Active), set available true. Adjust as needed.
-        this.isAvailable = (statusID == 1);
     }
 
-    // --- Public Constructor for Creating (New Mode) ---
     public ProductLine() {
         this.id = -1;
         this.name = "";
-        this.statusID = 0; // Default status (e.g., Stopped)
-        this.statusName = "Unknown";
-        this.tasks = new ArrayList<>();
-        this.isAvailable = false;
+        this.statusID = 0; // Default to 'Stopped' or 'Unknown'
         this.mode = Util.enObjectMode.ADDNEW;
     }
 
-    // --- Internal CRUD Logic ---
 
     private boolean _AddNew() {
-        int newId = AccessProductLine.addProductLine(this.name, this.statusID);
+        int newId = AccessTask.addProductLine(this.name, this.statusID);
         if (newId != -1) {
             this.id = newId;
             return true;
@@ -56,10 +41,9 @@ public class ProductLine {
     }
 
     private boolean _Update() {
-        return AccessProductLine.updateProductLine(this.id, this.name, this.statusID);
+        return AccessTask.updateProductLine(this.id, this.name, this.statusID);
     }
 
-    // --- Public Interface ---
 
     public boolean save() {
         switch (this.mode) {
@@ -72,75 +56,104 @@ public class ProductLine {
         }
     }
 
-    public static boolean deleteProductLine(int id) {
-        return AccessProductLine.deleteProductLine(id);
+    public boolean isTrulyAvailable() {
+        // يجب أن يكون نشطاً (statusID=1) وغير مشغول بمهمة أخرى (currentTask is null)
+        return this.statusID == 1 && this.currentTask.get() == null;
+    }
+    /**
+     * يقوم بتعيين مهمة جديدة لهذا الخط (يجعله مشغولاً).
+     * @param task المهمة التي سيتم تعيينها.
+     * @return true إذا نجحت عملية التعيين (كان الخط متاحاً).
+     */
+    public boolean assignTask(Task task) {
+        // compareAndSet هي عملية ذرية تضمن عدم حدوث تضارب
+        // هي تقوم بتعيين القيمة الجديدة فقط إذا كانت القيمة الحالية هي المتوقعة (null)
+        return this.currentTask.compareAndSet(null, task);
     }
 
-    // --- Static Finders ---
+    /**
+     * يقوم بتحرير الخط من المهمة الحالية (يجعله متاحاً مرة أخرى).
+     */
+    public void releaseTask() {
+        this.currentTask.set(null);
+    }
+
+    public Task getCurrentTask() {
+        return this.currentTask.get();
+    }
 
     public static ProductLine findByID(int id) {
-        String[] record = AccessProductLine.findByID(id);
-        if (record != null) {
-            return new ProductLine(
-                    Integer.parseInt(record[0]),
-                    record[1],
-                    Integer.parseInt(record[2])
-            );
-        }
-        return null;
-    }
-
-    public static ProductLine findByName(String name) {
-        String[] record = AccessProductLine.findByName(name);
-        if (record != null) {
-            return new ProductLine(
-                    Integer.parseInt(record[0]),
-                    record[1],
-                    Integer.parseInt(record[2])
-            );
+        List<String[]> records = AccessTask.loadAllProductLines();
+        for (String[] record : records) {
+            if (Integer.parseInt(record[0]) == id) {
+                try {
+                    return new ProductLine(
+                            Integer.parseInt(record[0]),
+                            record[1],
+                            Integer.parseInt(record[2])
+                    );
+                } catch (NumberFormatException e) {
+                    ErrorLogger.logError(e);
+                    return null;
+                }
+            }
         }
         return null;
     }
 
     public static List<ProductLine> getAllProductLines() {
-        List<String[]> records = AccessProductLine.loadProductLines();
         List<ProductLine> lines = new ArrayList<>();
+        List<String[]> records = AccessTask.loadAllProductLines();
 
         for (String[] record : records) {
-            lines.add(new ProductLine(
-                    Integer.parseInt(record[0]),
-                    record[1],
-                    Integer.parseInt(record[2])
-            ));
+            try {
+                lines.add(new ProductLine(
+                        Integer.parseInt(record[0]),
+                        record[1],
+                        Integer.parseInt(record[2])
+                ));
+            } catch (NumberFormatException e) {
+                ErrorLogger.logError(e);
+            }
         }
         return lines;
     }
 
-    // --- Other Business Logic ---
-
-    public void addTask(Task task) {
-        tasks.add(task);
+    public boolean isAvailable() {
+        return this.statusID == 1;
     }
 
-    // --- Getters and Setters ---
+    public int getId() {
+        return id;
+    }
 
-    public int getID() { return id; }
+    public String getName() {
+        return name;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public int getStatusID() { return statusID; }
+    public int getStatusID() {
+        return statusID;
+    }
+
     public void setStatusID(int statusID) {
         this.statusID = statusID;
-        this.statusName = AccessProductLine.getStatusName(statusID); // Update name when ID changes
     }
 
-    public String getStatusName() { return statusName; }
+    public String getStatusName() {
+        return AccessTask.findStatusNameById(this.statusID);
+    }
 
-    public List<Task> getTasks() { return tasks; }
+    public Util.enObjectMode getMode() {
+        return mode;
+    }
 
-    public boolean isAvailable() { return isAvailable; }
-    public void setAvailable(boolean available) { isAvailable = available; }
+    @Override
+    public String toString() {
+        return this.name;
+    }
 
-    public Util.enObjectMode getMode() { return mode; }
 }
