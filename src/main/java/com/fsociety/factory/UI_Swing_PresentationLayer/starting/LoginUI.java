@@ -261,7 +261,7 @@ public class LoginUI extends BaseFrame {
         return txtDescription;
     }
 
-    public static void main(String[] args) {
+    public static void startLogin() {
         SplashScreen splash = new SplashScreen();
         splash.setVisible(true);
         new Thread(() -> {
