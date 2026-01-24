@@ -18,7 +18,6 @@ public class User {
         MANAGER,
         PRODUCTION_SUPERVISOR,
         UNKNOWN;
-
         public static UserRole fromString(String roleString) {
             try {
                 return UserRole.valueOf(roleString.toUpperCase());
@@ -66,7 +65,7 @@ public class User {
         // تحقق من أن المدخلات ليست فارغة لزيادة الأمان
         if (password == null || password.length == 0 || this.hashedPassword == null || this.hashedPassword.isEmpty()) {
             return false;
-        }
+    }
 
         // استخدام BCrypt للمقارنة الآمنة
         return BCrypt.checkpw(new String(password), this.hashedPassword);
@@ -110,14 +109,14 @@ public class User {
             }
         }
         return users;
-    }
+}
 
     public static boolean deleteUser(int userIdToDelete) {
         List<String[]> allUserRecords = UserDataAccess.loadAllUsers();
-
         List<String[]> updatedUserRecords = allUserRecords.stream()
                 .filter(record -> Integer.parseInt(record[0]) != userIdToDelete)
                 .collect(Collectors.toList());
+//الحل الأكثر أماناً (Best Practice): يمكنك إضافة try-catch داخل الفلتر أو التأكد من أن النص رقمي قبل التحويل، لضمان أن البرنامج لن ينهار إذا واجه "سطراً تالفاً" في الملف النصي.
 
         if (allUserRecords.size() == updatedUserRecords.size()) {
             return false;
