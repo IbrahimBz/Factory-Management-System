@@ -10,15 +10,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class AccessProductLine {
 
     // --- FILE PATHS ---
     private static final String PRODUCT_LINE_FILE = "src//main//resources//dataFiles//product-lines.csv";
-    private static final String STATUS_FILE = "src//main//resources//dataFiles//product-line-status.csv";
 
     // --- ID GENERATION ---
     private static int currentMaxID = -1;
@@ -59,27 +56,9 @@ public class AccessProductLine {
         return lines;
     }
 
-    // Returns a Map of ID -> StatusName for easy lookup
-    public static Map<Integer, String> loadStatuses() {
-        Map<Integer, String> statuses = new HashMap<>();
-        try (CSVReader reader = new CSVReader(new FileReader(STATUS_FILE))) {
-            String[] record;
-            reader.readNext(); // Skip Header
-            while ((record = reader.readNext()) != null) {
-                statuses.put(Integer.parseInt(record[0]), record[1]);
-            }
-        } catch (IOException | CsvValidationException e) {
-            ErrorLogger.logError(e);
-
-        }
-        return statuses;
-    }
-
     // --- WRITE (Rewrite File) ---
     private static boolean saveAllProductLines(List<String[]> lines) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(PRODUCT_LINE_FILE))) {
-            // Re-write header if needed, or simply write all data
-            // If your file has headers, you might want to manually write them first
             String[] header = {"productLineID", "productLineName", "statusID"};
             writer.writeNext(header);
 
@@ -132,18 +111,6 @@ public class AccessProductLine {
         return false;
     }
 
-    public static boolean deleteProductLine(int id) {
-        List<String[]> lines = loadProductLines();
-        for (int i = 0; i < lines.size(); i++) {
-            if (Integer.parseInt(lines.get(i)[0]) == id) {
-                lines.remove(i);
-                return saveAllProductLines(lines);
-            }
-        }
-        return false;
-    }
-
-    // --- FINDERS ---
 
     public static String[] findByID(int id) {
         List<String[]> lines = loadProductLines();
@@ -155,18 +122,4 @@ public class AccessProductLine {
         return null;
     }
 
-    public static String[] findByName(String name) {
-        List<String[]> lines = loadProductLines();
-        for (String[] record : lines) {
-            if (record[1].equalsIgnoreCase(name)) {
-                return record;
-            }
-        }
-        return null;
-    }
-
-    // Helper to get status name
-    public static String getStatusName(int statusID) {
-        return loadStatuses().getOrDefault(statusID, "Unknown");
-    }
 }

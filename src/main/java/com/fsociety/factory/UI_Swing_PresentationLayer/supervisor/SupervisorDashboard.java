@@ -21,7 +21,6 @@ public class SupervisorDashboard extends BaseFrame {
         mainContent.setBorder(new EmptyBorder(40, 50, 40, 50));
         mainContent.setBackground(new Color(240, 248, 248));
 
-        // البطاقة 1: إدارة المخزون (صلاحية أساسية للمشرف)
         mainContent.add(createTaskCard("INVENTORY & STOCK",
                 "Monitor raw materials and update stock levels for production.",
                 new Color(0, 121, 107), "📦", e -> {
@@ -29,25 +28,13 @@ public class SupervisorDashboard extends BaseFrame {
                      new InventoryManagementUI().setVisible(true);
                 }));
 
-        // البطاقة 2: حالة خطوط الإنتاج
-        mainContent.add(createTaskCard("PRODUCTION LINES",
-                "View real-time status of active machinery and lines.",
-                new Color(44, 62, 80), "⚙️", e -> {
-                    new ProductionLinesUI().setVisible(true);
-                }));
 
-        // البطاقة 3: المهام والأوامر (جوهر عمل المشرف)
         mainContent.add(createTaskCard("TASKS & ORDERS",
                 "Assign production batches and monitor daily progress.",
                 new Color(38, 166, 154), "📋", e -> {
                    new TaskManagementUI().setVisible(true);
                 }));
 
-        mainContent.add(createTaskCard("INCIDENT LOGS",
-                "Report machinery issues and view maintenance logs.",
-                new Color(192, 57, 43), "⚠️", e -> {
-                    new IncidentLogsUI().setVisible(true);
-                }));
 
         add(mainContent, BorderLayout.CENTER);
 

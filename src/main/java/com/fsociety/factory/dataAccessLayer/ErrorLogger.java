@@ -16,11 +16,10 @@ public class ErrorLogger {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             writer.println("[" + timestamp + "] FATAL ERROR:");
 
-            // تحويل الـ StackTrace إلى نص وكتابته في الملف
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
-            writer.println(sw.toString());
+            writer.println(sw);
 
         } catch (IOException ioException) {
             System.err.println("Failed to write to error log: " + ioException.getMessage());

@@ -18,7 +18,7 @@ public class Task implements Runnable {
     private int productID;
     private int requiredQuantity;
     private int achievedQuantity;
-    private LocalDate startDate;
+    private final LocalDate startDate;
     private LocalDate endDate;
     private int statusID;
     private int clientID;
@@ -84,19 +84,13 @@ public class Task implements Runnable {
     }
 
     public boolean save() {
-        switch (this.mode) {
-            case ADDNEW:
-                return _AddNew();
-            case UPDATE:
-                return _Update();
-            default:
-                return false;
-        }
+        return switch (this.mode) {
+            case ADDNEW -> _AddNew();
+            case UPDATE -> _Update();
+            default -> false;
+        };
     }
 
-    public static boolean deleteTask(int id) {
-        return AccessTask.deleteTask(id);
-    }
 
     public static Task findByID(int id) {
         String[] data = AccessTask.findTaskByID(id);
@@ -150,39 +144,59 @@ public class Task implements Runnable {
         save();
     }
 
+
     @Override
     public void run() {
         this.thread = Thread.currentThread();
         try {
-            updateStatus(Status.RUNNING, "Task started on line " + assignedLine.getName());
+            // 1. Initial Status Update
+            updateStatus(Status.RUNNING, "Starting production on " + assignedLine.getName());
 
+            Inventory inventory = Inventory.getInstance();
+
+            // 2. Production Loop
             for (int i = achievedQuantity; i < requiredQuantity; i++) {
+
                 if (Thread.currentThread().isInterrupted()) {
                     throw new InterruptedException("Task cancelled by user.");
                 }
+
+                boolean canProduce = true;
+                for (Map.Entry<Integer, Integer> req : product.getRequiredItems().entrySet()) {
+                    Item item = inventory.findItemByIdInMemory(req.getKey()).orElse(null);
+                    if (item == null || item.getAvailableQuantity() < req.getValue()) {
+                        canProduce = false;
+                        break;
+                    }
+                }
+
+                if (!canProduce) {
+                    updateStatus(Status.PAUSED, "Insufficient materials in Inventory. Pausing...");
+                    return;
+                }
+
                 consumeMaterialsForOneUnit();
-                Thread.sleep(1000); // محاكاة وقت الإنتاج
+                Thread.sleep(1000);
+
                 this.achievedQuantity++;
-                save(); // حفظ التقدم
+                save();
             }
 
             this.endDate = LocalDate.now();
             this.product.setQuantityInStock(this.product.getQuantityInStock() + this.requiredQuantity);
             this.product.save();
+
             updateStatus(Status.COMPLETED, "Production finished successfully.");
 
         } catch (InterruptedException e) {
-            updateStatus(Status.CANCELLED, e.getMessage());
+            updateStatus(Status.CANCELLED, "Production stopped by user.");
             Thread.currentThread().interrupt();
-        } catch (IllegalStateException e) {
-            updateStatus(Status.PAUSED, e.getMessage());
         } catch (Exception e) {
-            updateStatus(Status.FAILED, "An unexpected error occurred.");
+            updateStatus(Status.FAILED, "Error: " + e.getMessage());
             ErrorLogger.logError(e);
         } finally {
-            if (this.assignedLine != null) {
+            if (this.statusID != Status.PAUSED.getValue() && this.assignedLine != null) {
                 this.assignedLine.releaseTask();
-                log(">> Line '" + this.assignedLine.getName() + "' has been released.");
             }
         }
     }
@@ -217,6 +231,10 @@ public class Task implements Runnable {
         return achievedQuantity;
     }
 
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
     public enum Status {
         PENDING(1), RUNNING(2), COMPLETED(3), PAUSED(4), CANCELLED(5), FAILED(6);
         private final int value;
@@ -249,4 +267,6 @@ public class Task implements Runnable {
     public Thread getThread() { return thread; }
     public Integer getProductLineID() { return productLineID; }
     public ProductLine getAssignedLine() { return assignedLine; }
+    public LocalDate getStartDate() { return this.startDate; }
+    public int getRequiredQuantity() { return this.requiredQuantity; }
 }

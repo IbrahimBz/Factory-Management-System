@@ -1,11 +1,9 @@
 package com.fsociety.factory.BusinessLayer.Manager;
 
-import com.fsociety.factory.BusinessLayer.Inventory.Inventory;
 import com.fsociety.factory.BusinessLayer.Production.ProductLine;
 import com.fsociety.factory.BusinessLayer.Production.Task;
 import com.fsociety.factory.BusinessLayer.Production.TaskManager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

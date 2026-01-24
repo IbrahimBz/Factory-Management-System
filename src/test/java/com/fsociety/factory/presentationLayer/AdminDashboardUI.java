@@ -26,7 +26,6 @@ public class AdminDashboardUI extends JFrame {
     public AdminDashboardUI() {
         this.taskManager = TaskManager.getInstance();
         this.inventory = Inventory.getInstance();
-        this.taskManager.setLogger(this::log);
 
         setTitle("Factory Admin Dashboard");
         // --- زيادة حجم النافذة ---

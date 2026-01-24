@@ -8,10 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * كلاس User (طبقة منطق العمل) بأسلوب Active Record.
- * هذا الكلاس يحتوي على منطق العمل ويعتمد على UserDataAccess لجلب البيانات.
- */
 public class User {
 
     public enum UserRole {
@@ -62,12 +58,10 @@ public class User {
     }
 
     public boolean checkPassword(char[] password) {
-        // تحقق من أن المدخلات ليست فارغة لزيادة الأمان
         if (password == null || password.length == 0 || this.hashedPassword == null || this.hashedPassword.isEmpty()) {
             return false;
     }
 
-        // استخدام BCrypt للمقارنة الآمنة
         return BCrypt.checkpw(new String(password), this.hashedPassword);
     }
 
@@ -79,7 +73,6 @@ public class User {
             return null;
         }
 
-        // 2. تشفير كلمة المرور (Hashing)
         String hashedPassword = BCrypt.hashpw(new String(password), BCrypt.gensalt(12));
 
         int newId = UserDataAccess.addUser(username, hashedPassword, role.name());
@@ -116,7 +109,6 @@ public class User {
         List<String[]> updatedUserRecords = allUserRecords.stream()
                 .filter(record -> Integer.parseInt(record[0]) != userIdToDelete)
                 .collect(Collectors.toList());
-//الحل الأكثر أماناً (Best Practice): يمكنك إضافة try-catch داخل الفلتر أو التأكد من أن النص رقمي قبل التحويل، لضمان أن البرنامج لن ينهار إذا واجه "سطراً تالفاً" في الملف النصي.
 
         if (allUserRecords.size() == updatedUserRecords.size()) {
             return false;

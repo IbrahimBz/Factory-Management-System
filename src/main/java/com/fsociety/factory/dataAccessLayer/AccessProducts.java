@@ -8,7 +8,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class AccessProducts {
@@ -47,7 +46,6 @@ public class AccessProducts {
         }
     }
 
-    // --- Product Methods ---
 
     public static List<String[]> loadAllProducts() {
         return loadData(PRODUCTS_FILE);
@@ -75,30 +73,15 @@ public class AccessProducts {
         }
         return found && saveData(PRODUCTS_FILE, PRODUCTS_HEADER, allProducts);
     }
-
-    public static boolean deleteProduct(int id) {
-        List<String[]> allProducts = loadAllProducts();
-        boolean removed = allProducts.removeIf(r -> Integer.parseInt(r[0]) == id);
-        if (removed) {
-            deleteRequirementsByProductID(id);
-            return saveData(PRODUCTS_FILE, PRODUCTS_HEADER, allProducts);
-        }
-        return false;
-    }
+    
 
     public static String[] findProductByID(int id) {
         return loadAllProducts().stream()
                 .filter(r -> Integer.parseInt(r[0]) == id)
                 .findFirst().orElse(null);
     }
+    
 
-    public static String[] findProductByName(String name) {
-        return loadAllProducts().stream()
-                .filter(r -> Objects.equals(r[1], name))
-                .findFirst().orElse(null);
-    }
-
-    // --- Requirement Methods ---
 
     public static List<String[]> findRequirementsByProductID(int productID) {
         return loadData(REQUIREMENTS_FILE).stream()
@@ -113,9 +96,11 @@ public class AccessProducts {
         return saveData(REQUIREMENTS_FILE, REQUIREMENTS_HEADER, allReqs);
     }
 
-    public static boolean deleteRequirementsByProductID(int productID) {
+    public static void deleteRequirementsByProductID(int productID) {
         List<String[]> allReqs = loadData(REQUIREMENTS_FILE);
         boolean removed = allReqs.removeIf(r -> Integer.parseInt(r[2]) == productID);
-        return removed && saveData(REQUIREMENTS_FILE, REQUIREMENTS_HEADER, allReqs);
+        if (removed) {
+            saveData(REQUIREMENTS_FILE, REQUIREMENTS_HEADER, allReqs);
+        }
     }
 }

@@ -31,7 +31,8 @@ public class AccessItems {
             while ((record = reader.readNext()) != null) {
                 items.add(record);
             }
-        } catch (IOException | CsvValidationException e) {
+        } catch (IOException | CsvValidationException exception) {
+            ErrorLogger.logError(exception);
         }
         return items;
     }

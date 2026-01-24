@@ -52,14 +52,11 @@ public class Item {
 
 
     public boolean save() {
-        switch (this.mode) {
-            case ADDNEW:
-                return _AddNew();
-            case UPDATE:
-                return _Update();
-            default:
-                return false;
-        }
+        return switch (this.mode) {
+            case ADDNEW -> _AddNew();
+            case UPDATE -> _Update();
+            default -> false;
+        };
     }
 
     public static boolean deleteItem(int id) {
@@ -74,35 +71,6 @@ public class Item {
         return new Item(Integer.parseInt(record[0]),record[1],Integer.parseInt(record[2])
                 ,Double.parseDouble(record[3]),Integer.parseInt(record[4]),Integer.parseInt(record[5]));
 
-
-    }
-
-    public static Item findByName(String name) {
-
-
-        String[] record = AccessItems.findByName(name);
-
-        if(record == null ) return null;
-        return new Item(Integer.parseInt(record[0]),record[1],Integer.parseInt(record[2])
-                ,Double.parseDouble(record[3]),Integer.parseInt(record[4]),Integer.parseInt(record[5]));
-
-
-    }
-
-
-    public static List<Item> findByCategoryID(int categoryID) {
-        List<String[]> itemsRecords = AccessItems.findItemsByCategory(categoryID);
-
-        if(itemsRecords.size() <= 1) return null;
-
-        List<Item> items = new ArrayList<>();
-
-        for (String[] record : itemsRecords) {
-            items.add(new Item(Integer.parseInt(record[0]), record[1], Integer.parseInt(record[2])
-                    , Double.parseDouble(record[3]), Integer.parseInt(record[4]), Integer.parseInt(record[5])));
-
-        }
-        return items;
 
     }
 
@@ -187,10 +155,6 @@ public class Item {
 
     public void setMinAllowedQuantity(int minAllowedQuantity) {
         this.minAllowedQuantity = minAllowedQuantity;
-    }
-
-    public Util.enObjectMode getMode() {
-        return mode;
     }
 
 

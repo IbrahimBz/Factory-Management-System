@@ -49,14 +49,11 @@ public class ProductLine {
 
 
     public boolean save() {
-        switch (this.mode) {
-            case ADDNEW:
-                return _AddNew();
-            case UPDATE:
-                return _Update();
-            default:
-                return false;
-        }
+        return switch (this.mode) {
+            case ADDNEW -> _AddNew();
+            case UPDATE -> _Update();
+            default -> false;
+        };
     }
 
     public boolean isTrulyAvailable() {
@@ -71,9 +68,7 @@ public class ProductLine {
         this.currentTask.set(null);
     }
 
-    public Task getCurrentTask() {
-        return this.currentTask.get();
-    }
+
 
     public static ProductLine findByID(int id) {
         List<String[]> records = AccessProductLine.loadProductLines();
@@ -114,10 +109,6 @@ public class ProductLine {
         return lines;
     }
 
-    public boolean isAvailable() {
-        return this.statusID == 1;
-    }
-
     public int getId() {
         return id;
     }
@@ -140,10 +131,6 @@ public class ProductLine {
 
     public String getStatusName() {
         return AccessTask.findStatusNameById(this.statusID);
-    }
-
-    public Util.enObjectMode getMode() {
-        return mode;
     }
 
     public String getNotes() {

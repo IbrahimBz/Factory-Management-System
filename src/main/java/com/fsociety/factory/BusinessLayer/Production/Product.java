@@ -11,7 +11,7 @@ public class Product {
     private int id;
     private String name;
     private int quantityInStock;
-    private Map<Integer, Integer> requiredItems;
+    private final Map<Integer, Integer> requiredItems;
     private final Util.enObjectMode mode;
 
     private Product(int id, String name, int quantityInStock) {
@@ -72,14 +72,11 @@ public class Product {
     }
 
     public boolean save() {
-        switch (this.mode) {
-            case ADDNEW:
-                return _AddNew();
-            case UPDATE:
-                return _Update();
-            default:
-                return false;
-        }
+        return switch (this.mode) {
+            case ADDNEW -> _AddNew();
+            case UPDATE -> _Update();
+            default -> false;
+        };
     }
 
     public boolean canProduceQuantity(int quantityToProduce) {
@@ -118,10 +115,6 @@ public class Product {
         return true;
     }
 
-    public static boolean deleteProduct(int id) {
-        return AccessProducts.deleteProduct(id);
-    }
-
     public static Product findByID(int id) {
         String[] productData = AccessProducts.findProductByID(id);
         if (productData == null) return null;
@@ -132,15 +125,6 @@ public class Product {
         );
     }
 
-    public static Product findByName(String name) {
-        String[] productData = AccessProducts.findProductByName(name);
-        if (productData == null) return null;
-        return new Product(
-                Integer.parseInt(productData[0]),
-                productData[1],
-                Integer.parseInt(productData[2])
-        );
-    }
 
     public static List<Product> getAllProducts() {
         List<Product> products = new ArrayList<>();
@@ -165,10 +149,6 @@ public class Product {
     public int getQuantityInStock() { return quantityInStock; }
     public void setQuantityInStock(int quantityInStock) { this.quantityInStock = quantityInStock; }
     public Map<Integer, Integer> getRequiredItems() { return requiredItems; }
-    public Util.enObjectMode getMode() { return mode; }
-    public void addRequiredItem(int itemId, int quantity) {
-        this.requiredItems.put(itemId, quantity);
-    }
 
     @Override
     public String toString() {

@@ -1,6 +1,7 @@
 package com.fsociety.factory.BusinessLayer.Inventory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -22,7 +23,7 @@ public class Inventory {
 
         List<Item> initialItems = Item.getAllItems();
 
-        if (initialItems.size() != 0) {
+        if (!initialItems.isEmpty()) {
             this.items = new CopyOnWriteArrayList<>(initialItems);
         } else {
             this.items = new CopyOnWriteArrayList<>();
@@ -97,4 +98,6 @@ public class Inventory {
             item.save();
         }
     }
+
+
 }

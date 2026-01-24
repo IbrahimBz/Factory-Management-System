@@ -99,16 +99,6 @@ public class AccessTask {
         return found && saveAllTasks(allTasks);
     }
 
-    public static boolean deleteTask(int id) {
-        List<String[]> allTasks = loadAllTasks();
-        boolean removed = allTasks.removeIf(r -> Integer.parseInt(r[0]) == id);
-
-        if (removed) {
-            return saveAllTasks(allTasks);
-        }
-        return false;
-    }
-
     public static String[] findTaskByID(int id) {
         return loadAllTasks().stream()
                 .filter(r -> Integer.parseInt(r[0]) == id)
@@ -155,45 +145,6 @@ public class AccessTask {
                 .findFirst().orElse("Unknown");
     }
 
-    private static boolean saveAllProductLines(List<String[]> lines) {
-        try (CSVWriter writer = new CSVWriter(new FileWriter(LINES_FILE))) {
-            writer.writeNext(new String[]{"productLineID", "productLineName", "statusID"});
-            writer.writeAll(lines);
-            return true;
-        } catch (IOException ex) {
-            ErrorLogger.logError(ex);
-            return false;
-        }
-    }
-
-    public static int addProductLine(String name, int statusID) {
-        List<String[]> allLines = loadAllProductLines();
-        int newId = allLines.stream()
-                .filter(r -> r != null && r.length > 0 && !r[0].isEmpty())
-                .mapToInt(r -> Integer.parseInt(r[0]))
-                .max()
-                .orElse(0) + 1;
-
-        allLines.add(new String[]{String.valueOf(newId), name, String.valueOf(statusID)});
-
-        if (saveAllProductLines(allLines)) {
-            return newId;
-        }
-        return -1;
-    }
-
-    public static boolean updateProductLine(int id, String name, int statusID) {
-        List<String[]> allLines = loadAllProductLines();
-        boolean found = false;
-        for (int i = 0; i < allLines.size(); i++) {
-            if (Integer.parseInt(allLines.get(i)[0]) == id) {
-                allLines.set(i, new String[]{String.valueOf(id), name, String.valueOf(statusID)});
-                found = true;
-                break;
-            }
-        }
-        return found && saveAllProductLines(allLines);
-    }
 
 
 }

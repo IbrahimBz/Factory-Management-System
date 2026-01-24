@@ -3,7 +3,6 @@ package com.fsociety.factory.BusinessLayer.Production;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class TaskManager {
@@ -11,7 +10,6 @@ public class TaskManager {
     private static TaskManager instance;
     private final List<Task> tasks;
     private final ProductionManager productionManager;
-    private Consumer<String> logger = (msg) -> {};
 
     private TaskManager() {
         this.tasks = new CopyOnWriteArrayList<>(Task.getAllTasks());
@@ -28,7 +26,6 @@ public class TaskManager {
 
     public void submitNewTaskToLine(Product product, int requiredQuantity, int clientID, ProductLine line) {
         if (line == null) {
-            logger.accept("!! ERROR: A specific production line must be provided.");
             return;
         }
 
@@ -36,15 +33,12 @@ public class TaskManager {
         newTask.setProduct(product);
         newTask.setRequiredQuantity(requiredQuantity);
         newTask.setClientID(clientID);
-        newTask.setLogger(this.logger);
 
         if (!newTask.save()) {
-            logger.accept("!! FATAL: Could not save new task to the data file.");
             return;
         }
 
         this.tasks.add(newTask);
-        logger.accept(">> New Task #" + newTask.getId() + " created for product '" + product.getName() + "'.");
 
         assignAndExecuteTask(newTask, line);
     }
@@ -60,18 +54,12 @@ public class TaskManager {
     }
 
 
-    public void setLogger(Consumer<String> logger) {
-        this.logger = logger;
-        this.tasks.forEach(task -> task.setLogger(logger));
-    }
-
     public void retryPendingAndPausedTasks() {
         List<Task> tasksToRetry = this.tasks.stream()
                 .filter(t -> t.getStatusID() == 1 || t.getStatusID() == 4)
-                .collect(Collectors.toList());
+                .toList();
 
         if (!tasksToRetry.isEmpty()) {
-            logger.accept(">> Retrying " + tasksToRetry.size() + " pending/paused tasks...");
             for (Task task : tasksToRetry) {
                 submitExistingTask(task);
             }
@@ -80,7 +68,6 @@ public class TaskManager {
 
     public void assignAndExecuteTask(Task task, ProductLine line) {
         if (line == null || !line.isTrulyAvailable()) {
-            logger.accept("!! ERROR: Cannot assign Task #" + task.getId() + " to line '" + (line != null ? line.getName() : "null") + "'. Line is not available or is busy.");
             task.updateStatus(Task.Status.PENDING, "Assignment failed, line was not available.");
             return;
         }
@@ -88,26 +75,16 @@ public class TaskManager {
         task.setAssignedLine(line);
         task.save();
 
-        // --- استخدام assignTask الذرية لمحاولة حجز الخط ---
         if (line.assignTask(task)) {
-            logger.accept(">> Line '" + line.getName() + "' has been successfully reserved for Task #" + task.getId() + ".");
             productionManager.executeTask(task);
         } else {
-            // هذا يحدث في حالة السباق النادرة حيث يحجز thread آخر الخط في نفس اللحظة
             task.updateStatus(Task.Status.PAUSED, "Line became busy during assignment. Will retry.");
-            logger.accept("!! WARNING: Line '" + line.getName() + "' was busy. Task #" + task.getId() + " is paused.");
         }
     }
 
-    public boolean submitExistingTask(Task task) {
+    public void submitExistingTask(Task task) {
         Optional<ProductLine> availableLine = findAvailableLine();
-        if (availableLine.isPresent()) {
-            assignAndExecuteTask(task, availableLine.get());
-            return true;
-        } else {
-            logger.accept(">> WARNING: No available lines for Task #" + task.getId() + ". It will remain in its current state.");
-            return false;
-        }
+        availableLine.ifPresent(productLine -> assignAndExecuteTask(task, productLine));
     }
 
 
@@ -140,18 +117,6 @@ public class TaskManager {
                 .findFirst();
     }
 
-    public List<Task> getRunningTasks() {
-        List<Task> runningTasks = new ArrayList<>();
-
-        for(Task task: tasks) {
-
-            if(task.getStatusName() == "Running") runningTasks.add(task);
-
-        }
-
-        return runningTasks;
-    }
-
     public List<Task> getCompletedTasks() {
         List<Task> completedTasks = new ArrayList<>();
 
@@ -164,57 +129,36 @@ public class TaskManager {
         return completedTasks;
     }
 
-    public List<ProductLine> getProductLinesByProduct(int productId) {
 
-
-        List<ProductLine> productLines = new ArrayList<>();
-
-
-        for(Task task: getTasksByProduct(productId)) {
-
-            productLines.add(task.getProductLine());
-
-        }
-
-        return productLines;
-    }
-
-    public List<Product> getProductsByline(int productId){
-        List<Product> products = new ArrayList<>();
-
-
-
-        for(Task task: getTasksByProduct(productId)) {
-
-            if(task.getProductLineID() == productId)
-                products.add(task.getProduct());
-
-
-        }
-
-
-        return products;
-    }
-
-    public List<Product> getAllProducts() {
-        return Product.getAllProducts();
-    }
-
-    public Product getTopProductInDetermineDate(LocalDate first, LocalDate end) {
-        // 1. التحقق من وجود مهام في القائمة لتجنب الـ IndexOutOfBoundsException
+    public Product getTopProductInDetermineDate(LocalDate start, LocalDate end) {
         if (tasks == null || tasks.isEmpty()) {
             return null;
         }
 
+        Map<Integer, Integer> productTotals = new HashMap<>();
         Product topProduct = null;
         int maxQuantity = -1;
 
-        // 2. البحث عن المنتج الأكثر إنتاجاً (Achieved Quantity)
         for (Task task : tasks) {
-            // يمكنك هنا إضافة فلتر التاريخ (first & end) إذا كنت ترغب في تفعيل خاصية الفترة الزمنية
-            if (task.getAchievedQuantity() > maxQuantity) {
-                maxQuantity = task.getAchievedQuantity();
-                topProduct = task.getProduct();
+            LocalDate taskDate = task.getEndDate();
+
+            if (taskDate == null) continue;
+
+            boolean isAfterStart = (start == null) || !taskDate.isBefore(start);
+            boolean isBeforeEnd = (end == null) || !taskDate.isAfter(end);
+
+            if (isAfterStart && isBeforeEnd) {
+                int prodID = task.getProduct().getId();
+                int currentTotal = productTotals.getOrDefault(prodID, 0);
+                int newTotal = currentTotal + task.getAchievedQuantity();
+                productTotals.put(prodID, newTotal);
+            }
+        }
+
+        for (Map.Entry<Integer, Integer> entry : productTotals.entrySet()) {
+            if (entry.getValue() > maxQuantity) {
+                maxQuantity = entry.getValue();
+                topProduct = Product.findByID(entry.getKey());
             }
         }
 

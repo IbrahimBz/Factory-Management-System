@@ -9,26 +9,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * هذا الكلاس مسؤول عن كل عمليات الوصول المباشر لملف user.csv.
- * تم تصميمه ليطابق تماماً أسلوب كلاس AccessItems.
- */
+
 public class UserDataAccess {
 
-    // 1. تحديد مسار ملف المستخدمين
     private static final String filePath = "src/main/resources/dataFiles/users.csv";
 
-    // 2. متغير لتتبع أعلى ID تم استخدامه لتوليد ID جديد
     private static int currentMaxID = -1;
 
 
     private static int generateID() {
         if (currentMaxID == -1) {
-            // نقوم بتهيئة القيمة الأولية بـ 0 في حال كان الملف فارغاً
             currentMaxID = 0;
             try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
                 String[] record;
-                reader.readNext(); // تخطي سطر العناوين (Header)
+                reader.readNext();
 
                 while ((record = reader.readNext()) != null) {
                     int id = Integer.parseInt(record[0]);
@@ -82,7 +76,7 @@ public class UserDataAccess {
 
         } catch (IOException ex) {
             ErrorLogger.logError(ex);
-            return -1; // فشلت عملية الإضافة
+            return -1;
         }
     }
 
@@ -90,7 +84,7 @@ public class UserDataAccess {
         List<String[]> users = new ArrayList<>();
         try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
             String[] record;
-            reader.readNext(); // تخطي سطر العناوين
+            reader.readNext();
 
             while ((record = reader.readNext()) != null) {
                 users.add(record);
