@@ -1,8 +1,7 @@
-package com.fsociety.factory.UI_Swing_PresentationLayer;
+package com.fsociety.factory.UI_Swing_PresentationLayer.starting;
 
 import javax.swing.*;
 import java.awt.*;
-
 public class SplashScreen extends JWindow {
     private final JProgressBar progressBar;
     private final JLabel lblStatus;
@@ -16,8 +15,7 @@ public class SplashScreen extends JWindow {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                GradientPaint gp = new GradientPaint(0, 0, new Color(0, 51, 51),
-                        getWidth(), getHeight(), new Color(20, 20, 20));
+                GradientPaint gp = new GradientPaint(0, 0, new Color(0, 51, 51), getWidth(), getHeight(), new Color(20, 20, 20));
                 g2d.setPaint(gp);
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
             }

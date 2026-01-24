@@ -1,4 +1,4 @@
-package com.fsociety.factory.UI_Swing_PresentationLayer;
+package com.fsociety.factory.UI_Swing_PresentationLayer.starting;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +26,20 @@ public class BaseFrame extends JFrame {
         }
     }
 
+
+    protected JPanel createNavigationHeader(String title) {
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(new Color(25, 42, 86)); // لون المدير الداكن
+
+        JButton btnBack = new JButton(" ❮  BACK ");
+        btnBack.setForeground(Color.WHITE);
+        btnBack.setBackground(new Color(44, 62, 80));
+        btnBack.addActionListener(e -> this.dispose());
+
+        header.add(btnBack, BorderLayout.WEST);
+        header.add(createTopBar(title), BorderLayout.CENTER);
+        return header;
+    }
     protected JPanel createStatCard(String title, String value, Color borderCol) {
         JPanel card = new JPanel(new GridLayout(2, 1));
         card.setBackground(Color.WHITE);
@@ -103,7 +117,7 @@ public class BaseFrame extends JFrame {
         return button;
     }
 
-    protected void showStyledMessage(String message, String title) {
+    public void showStyledMessage(String message, String title) {
         JDialog dialog = new JDialog(this, title, true);
         dialog.setUndecorated(true);
         dialog.setSize(350, 180);
@@ -129,7 +143,7 @@ public class BaseFrame extends JFrame {
         dialog.setVisible(true);
     }
 
-    protected boolean showConfirmMessage(String message, String title) {
+    public boolean showConfirmMessage(String message, String title) {
         final boolean[] result = {false};
 
         JDialog dialog = new JDialog(this, title, true);
