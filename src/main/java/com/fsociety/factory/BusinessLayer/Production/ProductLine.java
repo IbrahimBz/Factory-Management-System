@@ -1,6 +1,7 @@
 package com.fsociety.factory.BusinessLayer.Production;
 
 import com.fsociety.factory.BusinessLayer.Util;
+import com.fsociety.factory.dataAccessLayer.AccessProductLine;
 import com.fsociety.factory.dataAccessLayer.AccessTask;
 import com.fsociety.factory.dataAccessLayer.ErrorLogger;
 import java.util.ArrayList;
@@ -13,26 +14,28 @@ public class ProductLine {
     private String name;
     private int statusID;
     private final Util.enObjectMode mode;
+    private String notes;
     private final AtomicReference<Task> currentTask = new AtomicReference<>(null);
 
 
-    private ProductLine(int id, String name, int statusID) {
+    private ProductLine(int id, String name, int statusID, String notes) {
         this.id = id;
         this.name = name;
         this.statusID = statusID;
+        this.notes = notes;
         this.mode = Util.enObjectMode.UPDATE;
     }
 
     public ProductLine() {
         this.id = -1;
         this.name = "";
-        this.statusID = 0; // Default to 'Stopped' or 'Unknown'
+        this.statusID = 0;
         this.mode = Util.enObjectMode.ADDNEW;
     }
 
 
     private boolean _AddNew() {
-        int newId = AccessTask.addProductLine(this.name, this.statusID);
+        int newId = AccessProductLine.addProductLine(this.name, this.statusID, this.notes);
         if (newId != -1) {
             this.id = newId;
             return true;
@@ -41,7 +44,7 @@ public class ProductLine {
     }
 
     private boolean _Update() {
-        return AccessTask.updateProductLine(this.id, this.name, this.statusID);
+        return AccessProductLine.updateProductLine(this.id, this.name, this.statusID, this.notes);
     }
 
 
@@ -57,23 +60,13 @@ public class ProductLine {
     }
 
     public boolean isTrulyAvailable() {
-        // يجب أن يكون نشطاً (statusID=1) وغير مشغول بمهمة أخرى (currentTask is null)
         return this.statusID == 1 && this.currentTask.get() == null;
     }
-    /**
-     * يقوم بتعيين مهمة جديدة لهذا الخط (يجعله مشغولاً).
-     * @param task المهمة التي سيتم تعيينها.
-     * @return true إذا نجحت عملية التعيين (كان الخط متاحاً).
-     */
+
     public boolean assignTask(Task task) {
-        // compareAndSet هي عملية ذرية تضمن عدم حدوث تضارب
-        // هي تقوم بتعيين القيمة الجديدة فقط إذا كانت القيمة الحالية هي المتوقعة (null)
         return this.currentTask.compareAndSet(null, task);
     }
 
-    /**
-     * يقوم بتحرير الخط من المهمة الحالية (يجعله متاحاً مرة أخرى).
-     */
     public void releaseTask() {
         this.currentTask.set(null);
     }
@@ -83,14 +76,15 @@ public class ProductLine {
     }
 
     public static ProductLine findByID(int id) {
-        List<String[]> records = AccessTask.loadAllProductLines();
+        List<String[]> records = AccessProductLine.loadProductLines();
         for (String[] record : records) {
             if (Integer.parseInt(record[0]) == id) {
                 try {
                     return new ProductLine(
                             Integer.parseInt(record[0]),
                             record[1],
-                            Integer.parseInt(record[2])
+                            Integer.parseInt(record[2]),
+                            record[3]
                     );
                 } catch (NumberFormatException e) {
                     ErrorLogger.logError(e);
@@ -110,7 +104,8 @@ public class ProductLine {
                 lines.add(new ProductLine(
                         Integer.parseInt(record[0]),
                         record[1],
-                        Integer.parseInt(record[2])
+                        Integer.parseInt(record[2]),
+                        record[3]
                 ));
             } catch (NumberFormatException e) {
                 ErrorLogger.logError(e);
@@ -149,6 +144,14 @@ public class ProductLine {
 
     public Util.enObjectMode getMode() {
         return mode;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     @Override

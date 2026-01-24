@@ -25,10 +25,6 @@ public class ProductionManager {
         return instance;
     }
 
-    /**
-     * هذه الدالة الآن مسؤولة فقط عن تسليم المهمة إلى الـ pool لتشغيلها.
-     * منطق الحجز والتعيين يحدث في TaskManager.
-     */
     public void executeTask(Runnable task) {
         if (!executorService.isShutdown()) {
             executorService.submit(task);

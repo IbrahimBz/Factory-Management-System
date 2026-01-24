@@ -55,10 +55,8 @@ public class Inventory {
     }
 
     public synchronized boolean deleteItem(int itemId) {
-        // 1. استخدم دالة deleteItem من كلاس Item لحذفه من الملف
         boolean success = Item.deleteItem(itemId);
 
-        // 2. إذا نجح الحذف من الملف، قم بإزالته من القائمة في الذاكرة
         if (success) {
             this.items.removeIf(item -> item.getId() == itemId);
         }

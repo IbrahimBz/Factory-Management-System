@@ -213,12 +213,25 @@ public class Task implements Runnable {
         return (requiredQuantity == 0) ? 0.0 : ((double) achievedQuantity / requiredQuantity) * 100.0;
     }
 
+    public int getAchievedQuantity() {
+        return achievedQuantity;
+    }
+
     public enum Status {
         PENDING(1), RUNNING(2), COMPLETED(3), PAUSED(4), CANCELLED(5), FAILED(6);
         private final int value;
         Status(int value) { this.value = value; }
         public int getValue() { return value; }
     }
+
+    public Product getProduct() {
+        return Product.findByID(this.productID);
+    }
+
+    public ProductLine getProductLine() {
+        return ProductLine.findByID(this.productID);
+    }
+
 
     // --- Getters and Setters ---
     public void setLogger(Consumer<String> logger) { this.logger = logger; }
@@ -233,7 +246,6 @@ public class Task implements Runnable {
     public int getId() { return id; }
     public int getStatusID() { return statusID; }
     public String getStatusName() { return AccessTask.findStatusNameById(this.statusID); }
-    public Product getProduct() { return product; }
     public Thread getThread() { return thread; }
     public Integer getProductLineID() { return productLineID; }
     public ProductLine getAssignedLine() { return assignedLine; }

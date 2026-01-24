@@ -67,10 +67,8 @@ public class TaskManager {
     }
 
     public void assignAndExecuteTask(Task task, ProductLine line) {
-        // --- استخدام isTrulyAvailable للتحقق المزدوج ---
         if (line == null || !line.isTrulyAvailable()) {
             logger.accept("!! ERROR: Cannot assign Task #" + task.getId() + " to line '" + (line != null ? line.getName() : "null") + "'. Line is not available or is busy.");
-            // إذا فشل التعيين، أرجع المهمة إلى حالة "معلقة"
             task.updateStatus(Task.Status.PENDING, "Assignment failed, line was not available.");
             return;
         }
@@ -105,14 +103,12 @@ public class TaskManager {
             if (task.getThread() != null) {
                 task.getThread().interrupt();
             } else {
-                // إذا لم تكن المهمة تعمل، فقط قم بتغيير حالتها
                 task.updateStatus(Task.Status.CANCELLED, "Cancelled by user before starting.");
             }
         });
     }
 
     private Optional<ProductLine> findAvailableLine() {
-        // --- استخدام isTrulyAvailable للبحث عن خط متاح حقاً ---
         return productionManager.getProductLines().stream()
                 .filter(ProductLine::isTrulyAvailable)
                 .findFirst();
@@ -140,4 +136,6 @@ public class TaskManager {
                 .filter(task -> task.getProduct().getId() == productId)
                 .collect(Collectors.toList());
     }
+
+
 }

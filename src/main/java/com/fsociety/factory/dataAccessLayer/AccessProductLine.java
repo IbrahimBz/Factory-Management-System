@@ -94,7 +94,7 @@ public class AccessProductLine {
 
     // --- CRUD OPERATIONS ---
 
-    public static int addProductLine(String name, int statusID) {
+    public static int addProductLine(String name, int statusID,String notes) {
         try (FileWriter writer = new FileWriter(PRODUCT_LINE_FILE, true)) { // Append
             CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT);
             int id = generateID();
@@ -102,7 +102,8 @@ public class AccessProductLine {
             printer.printRecord(
                     Integer.toString(id),
                     name,
-                    Integer.toString(statusID)
+                    Integer.toString(statusID),
+                    notes
             );
             printer.flush();
             return id;
@@ -113,12 +114,13 @@ public class AccessProductLine {
         }
     }
 
-    public static boolean updateProductLine(int id, String name, int statusID) {
+    public static boolean updateProductLine(int id, String name, int statusID, String notes) {
         List<String[]> lines = loadProductLines();
         String[] updatedRecord = {
                 Integer.toString(id),
                 name,
-                Integer.toString(statusID)
+                Integer.toString(statusID),
+                notes
         };
 
         for (int i = 0; i < lines.size(); i++) {

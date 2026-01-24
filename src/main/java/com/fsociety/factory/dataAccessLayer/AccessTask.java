@@ -12,15 +12,11 @@ import java.util.List;
 
 public class AccessTask {
 
-    // --- File Paths ---
     private static final String TASKS_FILE = "src/main/resources/dataFiles/production-tasks.csv";
     private static final String LINES_FILE = "src/main/resources/dataFiles/product-lines.csv";
     private static final String STATUS_FILE = "src/main/resources/dataFiles/task-statuses.csv";
 
-    // --- CSV Headers ---
     private static final String[] TASKS_HEADER = {"taskID", "productLineID", "productID", "requiredProductQuantity", "achievedProductQuantity", "startDate", "endDate", "taskStatusID", "clientID"};
-
-    // --- Task CRUD Operations ---
 
     public static List<String[]> loadAllTasks() {
         List<String[]> tasks = new ArrayList<>();
@@ -51,15 +47,11 @@ public class AccessTask {
         }
     }
 
-    // في كلاس AccessTask.java
-
     public static int addTask(int productID, int requiredQuantity, int clientID) {
         List<String[]> allTasks = loadAllTasks();
 
-        // --- التصحيح هنا ---
-        // فلترة أي سجلات فارغة أو تالفة قبل محاولة التحويل
         int newId = allTasks.stream()
-                .filter(r -> r != null && r.length > 0 && !r[0].isEmpty()) // سطر الأمان
+                .filter(r -> r != null && r.length > 0 && !r[0].isEmpty())
                 .mapToInt(r -> Integer.parseInt(r[0]))
                 .max()
                 .orElse(0) + 1;
@@ -70,7 +62,7 @@ public class AccessTask {
         newRecord[2] = String.valueOf(productID);
         newRecord[3] = String.valueOf(requiredQuantity);
         newRecord[4] = "0"; // achievedProductQuantity
-        newRecord[5] = java.time.LocalDate.now().toString(); // startDate
+        newRecord[5] = java.time.LocalDate.now().toString();
         newRecord[6] = ""; // endDate
         newRecord[7] = "1"; // taskStatusID (1 = PENDING)
         newRecord[8] = String.valueOf(clientID);
@@ -82,9 +74,6 @@ public class AccessTask {
         }
         return -1;
     }
-
-
-// في كلاس AccessTask.java
 
     public static boolean updateTask(int id, Integer productLineID, int productID, int requiredQuantity, int achievedQuantity, String startDate, String endDate, int statusID, int clientID) {
         List<String[]> allTasks = loadAllTasks();
@@ -126,8 +115,6 @@ public class AccessTask {
                 .findFirst().orElse(null);
     }
 
-    // --- ProductLine Read Operations ---
-
     public static List<String[]> loadAllProductLines() {
         List<String[]> lines = new ArrayList<>();
         File file = new File(LINES_FILE);
@@ -145,8 +132,6 @@ public class AccessTask {
         }
         return lines;
     }
-
-    // --- TaskStatus Read Operations ---
 
     public static String findStatusNameById(int statusId) {
         List<String[]> statuses = new ArrayList<>();
@@ -169,10 +154,6 @@ public class AccessTask {
                 .map(r -> r[1])
                 .findFirst().orElse("Unknown");
     }
-
-    // أضف هذه الدوال الجديدة إلى كلاس AccessTask.java
-
-// --- ProductLine CRUD Operations ---
 
     private static boolean saveAllProductLines(List<String[]> lines) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(LINES_FILE))) {
