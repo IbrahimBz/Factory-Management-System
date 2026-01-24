@@ -1,9 +1,7 @@
 package com.fsociety.factory.BusinessLayer.Production;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -171,15 +169,59 @@ public class TaskManager {
 
         List<ProductLine> productLines = new ArrayList<>();
 
+
         for(Task task: getTasksByProduct(productId)) {
 
+            productLines.add(task.getProductLine());
 
         }
 
         return productLines;
     }
 
+    public List<Product> getProductsByline(int productId){
+        List<Product> products = new ArrayList<>();
 
 
+
+        for(Task task: getTasksByProduct(productId)) {
+
+            if(task.getProductLineID() == productId)
+                products.add(task.getProduct());
+
+
+        }
+
+
+        return products;
+    }
+
+    public List<Product> getAllProducts() {
+        return Product.getAllProducts();
+    }
+
+    public Product getTopProductInDetermineDate(LocalDate first , LocalDate end) {
+
+        List<Product> products = new ArrayList<>();
+
+
+        int max = tasks.get(0).getProduct().getQuantityInStock();
+
+        for(Task task: getAllTasks() ){
+
+            max = Math.max(max, task.getAchievedQuantity());
+
+
+
+
+
+        }
+
+
+        return products.get(0);
+
+
+
+    }
 
 }
