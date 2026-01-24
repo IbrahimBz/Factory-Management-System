@@ -1,15 +1,13 @@
 package com.fsociety.factory;
 
-import com.fsociety.factory.dataAccessLayer.AccessItems;
+import com.fsociety.factory.BusinessLayer.Inventory.Inventory;
 
-/**
- * Hello world!
- */
 public class App {
-    public static void main(String[] args) {
-        System.out.println(
-                AccessItems.loadItemsFromCSVFile()
 
-        );
+    public static void main(String[] args) {
+
+        Inventory.getInstance();
+
+        System.out.println("Hello World");
     }
 }

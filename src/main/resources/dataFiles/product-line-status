@@ -1,1 +1,4 @@
 productLineStatusID,statusName
+0,Stopped
+1,Active
+2,Maintenance

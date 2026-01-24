@@ -1,38 +1,21 @@
-package com.fsociety.factory.BusinessLayer;
+package com.fsociety.factory.BusinessLayer.Inventory;
 
+import com.fsociety.factory.BusinessLayer.Util;
+import com.fsociety.factory.dataAccessLayer.AccessCategory;
 import com.fsociety.factory.dataAccessLayer.AccessItems;
+import com.fsociety.factory.dataAccessLayer.ErrorLogger;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Item {
-
-    // This static field holds the highest ID used so far
-
-    public static enum enItemCategory {
-        UNDETERMINED,
-        ELECTRONICS,
-        CLOTHING,
-        FOOD;
-
-        @Override
-        public String toString() {
-            switch (this) {
-                case ELECTRONICS: return "Electronics";
-                case CLOTHING: return "Clothing";
-                case FOOD: return "Food";
-                default: return super.toString();
-            }
-        }
-    }
-
     private int id;
     private String name;
     private int categoryID;
     private double price;
     private int availableQuantity;
     private int minAllowedQuantity;
-    private Util.enObjectMode mode;
+    private final Util.enObjectMode mode;
 
 
     private Item(int id, String name, int categoryID, double price, int availableQuantity, int minAllowedQuantity) {
@@ -48,6 +31,7 @@ public class Item {
 
     private boolean _AddNew() {
         int id = AccessItems.addItem(this.name,this.categoryID,this.price,this.availableQuantity,this.minAllowedQuantity);
+        this.id = id;
         return (id != -1);
     }
 
@@ -81,9 +65,10 @@ public class Item {
     public static boolean deleteItem(int id) {
         return AccessItems.deleteItem(id);
     }
+
     public static Item findByID(int id) {
 
-        String[] record = AccessItems.findByID(id);;
+        String[] record = AccessItems.findByID(id);
 
         if(record == null ) return null;
         return new Item(Integer.parseInt(record[0]),record[1],Integer.parseInt(record[2])
@@ -91,6 +76,7 @@ public class Item {
 
 
     }
+
     public static Item findByName(String name) {
 
 
@@ -102,22 +88,59 @@ public class Item {
 
 
     }
+
+
     public static List<Item> findByCategoryID(int categoryID) {
         List<String[]> itemsRecords = AccessItems.findItemsByCategory(categoryID);
 
-        if(itemsRecords.size() <= 1 || itemsRecords == null) return null;
+        if(itemsRecords.size() <= 1) return null;
 
         List<Item> items = new ArrayList<>();
 
-        for(int i = 0; i < itemsRecords.size();i++) {
-            String[] record = itemsRecords.get(i);
-            items.add(new Item(Integer.parseInt(record[0]),record[1],Integer.parseInt(record[2])
-                    ,Double.parseDouble(record[3]),Integer.parseInt(record[4]),Integer.parseInt(record[5])));
+        for (String[] record : itemsRecords) {
+            items.add(new Item(Integer.parseInt(record[0]), record[1], Integer.parseInt(record[2])
+                    , Double.parseDouble(record[3]), Integer.parseInt(record[4]), Integer.parseInt(record[5])));
 
         }
         return items;
 
     }
+
+
+    public static List<Item> getAllItems() {
+        List<String[]> itemsRecords = AccessItems.loadItemsFromCSVFile();
+
+        if (itemsRecords.isEmpty()) {
+            return new ArrayList<>(); // أرجع قائمة فارغة بدلاً من null
+        }
+
+        List<Item> items = new ArrayList<>();
+        for (String[] record : itemsRecords) {
+            try {
+                items.add(new Item(
+                        Integer.parseInt(record[0]),
+                        record[1],
+                        Integer.parseInt(record[2]),
+                        Double.parseDouble(record[3]),
+                        Integer.parseInt(record[4]),
+                        Integer.parseInt(record[5])
+                ));
+            } catch (Exception e) {
+                ErrorLogger.logError(e);
+            }
+        }
+        return items;
+    }
+
+    public String getCategoryName() {
+        String[] categoryRecord = AccessCategory.findByID(this.categoryID);
+        if (categoryRecord != null && categoryRecord.length > 1) {
+            return categoryRecord[1];
+        }
+        return "N/A";
+    }
+
+
 
     // Getters and Setters
 

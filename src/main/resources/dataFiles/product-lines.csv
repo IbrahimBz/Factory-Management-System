@@ -1,1 +1,4 @@
-productLineID,productLineName,statusID
+productLineID,productLineName,statusID,notes
+1,IbrahimLine-A,1,"some thing"
+2,IbrahimLine-B,1,"yes"
+3,West-Wing-Line,1,"no"

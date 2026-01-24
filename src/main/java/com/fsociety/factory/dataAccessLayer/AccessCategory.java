@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class AccessCategory {
 
-    private static String filePath = "src//main//resources//dataFiles//categories.csv";
+    private static final String filePath = "src//main//resources//dataFiles//categories.csv";
 
     public static String[] findByID(int id) {
 
@@ -26,14 +26,15 @@ public class AccessCategory {
                     int categoryID = Integer.parseInt(record[0]);
 
                     if(categoryID == id)  return  record;
-                };
+                }
 
 
                 }
 
 
              catch (IOException | CsvValidationException e) {
-                 e.printStackTrace();}
+                 ErrorLogger.logError(e);
+            }
 
             return null;
 }

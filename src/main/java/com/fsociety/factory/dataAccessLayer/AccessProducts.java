@@ -2,203 +2,120 @@ package com.fsociety.factory.dataAccessLayer;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
-import com.opencsv.exceptions.CsvValidationException;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class AccessProducts {
 
-    // --- FILE PATHS (Adjust these paths to your project) ---
-    private static final String PRODUCTS_FILE_PATH = "src//main//resources//dataFiles//products.csv";
-    private static final String REQUIREMENTS_FILE_PATH = "src//main//resources//dataFiles//production-required-items.csv";
+    private static final String PRODUCTS_FILE = "src/main/resources/dataFiles/products.csv";
+    private static final String REQUIREMENTS_FILE = "src/main/resources/dataFiles/production-required-items.csv";
+    private static final String[] PRODUCTS_HEADER = {"productID", "productName", "productQuantity"};
+    private static final String[] REQUIREMENTS_HEADER = {"productionRequiredItemID", "itemID", "productID", "itemsQuantity"};
 
-    // --- ID GENERATION FIELDS ---
-    private static int currentMaxProductID = -1;
-    private static int currentMaxRequirementID = -1;
-
-    private static final String[] PRODUCT_HEADERS = {"productID", "productName", "productQuantity"};
-    private static final String[] REQUIREMENT_HEADERS = {"productionRequiredItemID", "itemID", "productID", "itemsQuantity"};
-
-
-    // --- ID GENERATION LOGIC ---
-
-    // Initializes the Max IDs by scanning the files (Called once)
-    private static void initializeMaxIDs() {
-        if (currentMaxProductID != -1 && currentMaxRequirementID != -1) return;
-
-        // Initialize Product ID (scanning PRODUCTS_FILE_PATH)
-        try (CSVReader reader = new CSVReader(new FileReader(PRODUCTS_FILE_PATH))) {
-            String[] record;
-            reader.readNext(); // Skip header
-            while ((record = reader.readNext()) != null) {
-                currentMaxProductID = Math.max(currentMaxProductID, Integer.parseInt(record[0]));
-            }
-        } catch (IOException | CsvValidationException ex) {
-            ErrorLogger.logError("Error initializing Product IDs: " + ex.getMessage());
+    private static List<String[]> loadData(String path) {
+        List<String[]> data = new ArrayList<>();
+        File file = new File(path);
+        if (!file.exists()) {
+            return data;
         }
-
-        // Initialize Requirement ID (scanning REQUIREMENTS_FILE_PATH)
-        try (CSVReader reader = new CSVReader(new FileReader(REQUIREMENTS_FILE_PATH))) {
-            String[] record;
-            reader.readNext(); // Skip header
-            while ((record = reader.readNext()) != null) {
-                currentMaxRequirementID = Math.max(currentMaxRequirementID, Integer.parseInt(record[0]));
-            }
-        } catch (IOException | CsvValidationException ex) {
-            ErrorLogger.logError("Error initializing Requirement IDs: " + ex.getMessage());
-        }
-    }
-
-    public static int generateProductID() {
-        initializeMaxIDs();
-        return ++currentMaxProductID;
-    }
-
-    public static int generateRequirementID() {
-        initializeMaxIDs();
-        return ++currentMaxRequirementID;
-    }
-
-    // --- CORE FILE R/W UTILITIES ---
-
-    // General method to load any CSV
-    private static List<String[]> loadCSV(String filePath) {
-        List<String[]> records = new ArrayList<>();
-        try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
+        try (CSVReader reader = new CSVReader(new FileReader(file))) {
             reader.readNext(); // Skip header
             String[] record;
             while ((record = reader.readNext()) != null) {
-                records.add(record);
+                data.add(record);
             }
-        } catch (IOException | CsvValidationException e) {
-            ErrorLogger.logError("Error loading CSV: " + filePath + " " + e.getMessage());
+        } catch (Exception e) {
+            ErrorLogger.logError(e);
         }
-        return records;
+        return data;
     }
 
-    // General method to overwrite/write all records
-    private static boolean writeCSV(String filePath, List<String[]> records, String[] headers) {
-        try (CSVWriter writer = new CSVWriter(new FileWriter(filePath, false))) { // false = overwrite
-            writer.writeNext(headers);
-            writer.writeAll(records);
+    private static boolean saveData(String path, String[] header, List<String[]> data) {
+        try (CSVWriter writer = new CSVWriter(new FileWriter(path))) {
+            writer.writeNext(header);
+            writer.writeAll(data);
             return true;
         } catch (IOException ex) {
-            ErrorLogger.logError("Error writing CSV: " + filePath + " " + ex.getMessage());
+            ErrorLogger.logError(ex);
             return false;
         }
     }
 
-    // --- CREATE (Insert) Operations ---
+    // --- Product Methods ---
 
-    public static int addProductRecord(String name, int quantity) {
-        try (FileWriter writer = new FileWriter(PRODUCTS_FILE_PATH, true)) { // Append mode
-            CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT);
-            int id = generateProductID();
+    public static List<String[]> loadAllProducts() {
+        return loadData(PRODUCTS_FILE);
+    }
 
-            printer.printRecord(
-                    Integer.toString(id),
-                    name,
-                    Integer.toString(quantity)
-            );
-            printer.flush();
-            return id;
-        } catch (IOException ex) {
-            ErrorLogger.logError("Error adding product: " + ex.getMessage());
-            return -1;
+    public static int addProduct(String name, int quantity) {
+        List<String[]> allProducts = loadAllProducts();
+        int newId = allProducts.stream().mapToInt(r -> Integer.parseInt(r[0])).max().orElse(0) + 1;
+        allProducts.add(new String[]{String.valueOf(newId), name, String.valueOf(quantity)});
+        if (saveData(PRODUCTS_FILE, PRODUCTS_HEADER, allProducts)) {
+            return newId;
         }
+        return -1;
     }
 
-    public static boolean addRequirementRecord(int productID, int itemID, int itemsQuantity) {
-        try (FileWriter writer = new FileWriter(REQUIREMENTS_FILE_PATH, true)) { // Append mode
-            CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT);
-            int id = generateRequirementID();
-
-            printer.printRecord(
-                    Integer.toString(id),
-                    Integer.toString(itemID),
-                    Integer.toString(productID),
-                    Integer.toString(itemsQuantity)
-            );
-            printer.flush();
-            return true;
-        } catch (IOException ex) {
-            ErrorLogger.logError("Error adding requirement: " + ex.getMessage());
-            return false;
-        }
-    }
-
-    // --- READ (Finders) Operations ---
-
-    public static String[] findProductByID(int id) {
-        return loadCSV(PRODUCTS_FILE_PATH).stream()
-                .filter(p -> Integer.parseInt(p[0]) == id)
-                .findFirst()
-                .orElse(null);
-    }
-
-    public static String[] findProductByName(String name) {
-        return loadCSV(PRODUCTS_FILE_PATH).stream()
-                .filter(p -> p[1].equalsIgnoreCase(name))
-                .findFirst()
-                .orElse(null);
-    }
-
-    public static List<String[]> findRequirementsByProductID(int productID) {
-        return loadCSV(REQUIREMENTS_FILE_PATH).stream()
-                .filter(r -> Integer.parseInt(r[2]) == productID) // r[2] is productID
-                .collect(Collectors.toList());
-    }
-
-    // --- UPDATE/DELETE UTILITIES (Requires full file rewrite) ---
-
-    // Updates Product record and returns true if successful
     public static boolean updateProduct(int id, String name, int quantity) {
-        List<String[]> products = loadCSV(PRODUCTS_FILE_PATH);
-        String[] updatedRecord = {Integer.toString(id), name, Integer.toString(quantity)};
-
-        for (int i = 0; i < products.size(); i++) {
-            if (Integer.parseInt(products.get(i)[0]) == id) {
-                products.set(i, updatedRecord);
-                return writeCSV(PRODUCTS_FILE_PATH, products, PRODUCT_HEADERS);
+        List<String[]> allProducts = loadAllProducts();
+        boolean found = false;
+        for (int i = 0; i < allProducts.size(); i++) {
+            if (Integer.parseInt(allProducts.get(i)[0]) == id) {
+                allProducts.set(i, new String[]{String.valueOf(id), name, String.valueOf(quantity)});
+                found = true;
+                break;
             }
+        }
+        return found && saveData(PRODUCTS_FILE, PRODUCTS_HEADER, allProducts);
+    }
+
+    public static boolean deleteProduct(int id) {
+        List<String[]> allProducts = loadAllProducts();
+        boolean removed = allProducts.removeIf(r -> Integer.parseInt(r[0]) == id);
+        if (removed) {
+            deleteRequirementsByProductID(id);
+            return saveData(PRODUCTS_FILE, PRODUCTS_HEADER, allProducts);
         }
         return false;
     }
 
-    // Deletes Product and its associated requirements
-    public static boolean deleteProduct(int id) {
-        // 1. Delete from Products file
-        List<String[]> products = loadCSV(PRODUCTS_FILE_PATH);
-        List<String[]> filteredProducts = products.stream()
-                .filter(p -> Integer.parseInt(p[0]) != id)
-                .collect(Collectors.toList());
-
-        boolean deletedProduct = filteredProducts.size() < products.size() && writeCSV(PRODUCTS_FILE_PATH, filteredProducts, PRODUCT_HEADERS);
-
-        // 2. Delete associated requirements (r[2] is productID)
-        List<String[]> requirements = loadCSV(REQUIREMENTS_FILE_PATH);
-        List<String[]> filteredRequirements = requirements.stream()
-                .filter(r -> Integer.parseInt(r[2]) != id)
-                .collect(Collectors.toList());
-
-        boolean deletedRequirements = writeCSV(REQUIREMENTS_FILE_PATH, filteredRequirements, REQUIREMENT_HEADERS);
-
-        return deletedProduct && deletedRequirements;
+    public static String[] findProductByID(int id) {
+        return loadAllProducts().stream()
+                .filter(r -> Integer.parseInt(r[0]) == id)
+                .findFirst().orElse(null);
     }
 
-    // Deletes ALL requirements for a specific product ID (used during update)
-    public static void deleteRequirementsByProductID(int productID) {
-        List<String[]> requirements = loadCSV(REQUIREMENTS_FILE_PATH);
-        List<String[]> filteredRequirements = requirements.stream()
-                .filter(r -> Integer.parseInt(r[2]) != productID)
+    public static String[] findProductByName(String name) {
+        return loadAllProducts().stream()
+                .filter(r -> Objects.equals(r[1], name))
+                .findFirst().orElse(null);
+    }
+
+    // --- Requirement Methods ---
+
+    public static List<String[]> findRequirementsByProductID(int productID) {
+        return loadData(REQUIREMENTS_FILE).stream()
+                .filter(r -> Integer.parseInt(r[2]) == productID)
                 .collect(Collectors.toList());
-        writeCSV(REQUIREMENTS_FILE_PATH, filteredRequirements, REQUIREMENT_HEADERS);
+    }
+
+    public static boolean addRequirement(int productID, int itemID, int quantity) {
+        List<String[]> allReqs = loadData(REQUIREMENTS_FILE);
+        int newId = allReqs.stream().mapToInt(r -> Integer.parseInt(r[0])).max().orElse(0) + 1;
+        allReqs.add(new String[]{String.valueOf(newId), String.valueOf(itemID), String.valueOf(productID), String.valueOf(quantity)});
+        return saveData(REQUIREMENTS_FILE, REQUIREMENTS_HEADER, allReqs);
+    }
+
+    public static boolean deleteRequirementsByProductID(int productID) {
+        List<String[]> allReqs = loadData(REQUIREMENTS_FILE);
+        boolean removed = allReqs.removeIf(r -> Integer.parseInt(r[2]) == productID);
+        return removed && saveData(REQUIREMENTS_FILE, REQUIREMENTS_HEADER, allReqs);
     }
 }

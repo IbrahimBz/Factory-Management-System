@@ -1,0 +1,3 @@
+userID,userName,hashedPassword,userRole
+1,"Nazeer","$2a$12$MZBvrHwBZqTh62y5fUvxgOsm0XoQ92DTJVPUyDWzfJ5xvsZcy1ZQO","MANAGER"
+"2","mozafer","$2a$12$op/6jeLeAFRZ7p3OYEig8egNFmhGtPdn9XN/LUUO.Nb9xh1tms8GC","MANAGER"
