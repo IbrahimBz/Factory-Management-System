@@ -201,7 +201,6 @@ public class TaskManager {
     }
 
     public Product getTopProductInDetermineDate(LocalDate first, LocalDate end) {
-        // 1. التحقق من وجود مهام في القائمة لتجنب الـ IndexOutOfBoundsException
         if (tasks == null || tasks.isEmpty()) {
             return null;
         }
