@@ -14,7 +14,6 @@ public class ProductionManager {
 
     private ProductionManager() {
         this.productLines = ProductLine.getAllProductLines();
-        // استخدام CachedThreadPool أكثر مرونة، حيث ينشئ threads عند الحاجة
         this.executorService = Executors.newCachedThreadPool();
     }
 
@@ -41,7 +40,6 @@ public class ProductionManager {
             executorService.shutdownNow();
             Thread.currentThread().interrupt();
         } finally {
-            // حفظ حالة المخزون عند إغلاق البرنامج
             Inventory.getInstance().persistChanges();
         }
     }
