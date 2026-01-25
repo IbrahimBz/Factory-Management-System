@@ -200,28 +200,25 @@ public class TaskManager {
         return Product.getAllProducts();
     }
 
-    public Product getTopProductInDetermineDate(LocalDate first , LocalDate end) {
-
-        List<Product> products = new ArrayList<>();
-
-
-        int max = tasks.get(0).getProduct().getQuantityInStock();
-
-        for(Task task: getAllTasks() ){
-
-            max = Math.max(max, task.getAchievedQuantity());
-
-
-
-
-
+    public Product getTopProductInDetermineDate(LocalDate first, LocalDate end) {
+        // 1. التحقق من وجود مهام في القائمة لتجنب الـ IndexOutOfBoundsException
+        if (tasks == null || tasks.isEmpty()) {
+            return null;
         }
 
+        Product topProduct = null;
+        int maxQuantity = -1;
 
-        return products.get(0);
+        // 2. البحث عن المنتج الأكثر إنتاجاً (Achieved Quantity)
+        for (Task task : tasks) {
+            // يمكنك هنا إضافة فلتر التاريخ (first & end) إذا كنت ترغب في تفعيل خاصية الفترة الزمنية
+            if (task.getAchievedQuantity() > maxQuantity) {
+                maxQuantity = task.getAchievedQuantity();
+                topProduct = task.getProduct();
+            }
+        }
 
-
-
+        return topProduct;
     }
 
 }
