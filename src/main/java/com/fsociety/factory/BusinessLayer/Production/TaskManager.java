@@ -1,7 +1,7 @@
 package com.fsociety.factory.BusinessLayer.Production;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -25,23 +25,6 @@ public class TaskManager {
         return instance;
     }
 
-    public void setLogger(Consumer<String> logger) {
-        this.logger = logger;
-        this.tasks.forEach(task -> task.setLogger(logger));
-    }
-
-    public void retryPendingAndPausedTasks() {
-        List<Task> tasksToRetry = this.tasks.stream()
-                .filter(t -> t.getStatusID() == 1 || t.getStatusID() == 4)
-                .collect(Collectors.toList());
-
-        if (!tasksToRetry.isEmpty()) {
-            logger.accept(">> Retrying " + tasksToRetry.size() + " pending/paused tasks...");
-            for (Task task : tasksToRetry) {
-                submitExistingTask(task);
-            }
-        }
-    }
 
     public void submitNewTaskToLine(Product product, int requiredQuantity, int clientID, ProductLine line) {
         if (line == null) {
@@ -64,6 +47,35 @@ public class TaskManager {
         logger.accept(">> New Task #" + newTask.getId() + " created for product '" + product.getName() + "'.");
 
         assignAndExecuteTask(newTask, line);
+    }
+
+    public void cancelTask(int taskId) {
+        findTaskById(taskId).ifPresent(task -> {
+            if (task.getThread() != null) {
+                task.getThread().interrupt();
+            } else {
+                task.updateStatus(Task.Status.CANCELLED, "Cancelled by user before starting.");
+            }
+        });
+    }
+
+
+    public void setLogger(Consumer<String> logger) {
+        this.logger = logger;
+        this.tasks.forEach(task -> task.setLogger(logger));
+    }
+
+    public void retryPendingAndPausedTasks() {
+        List<Task> tasksToRetry = this.tasks.stream()
+                .filter(t -> t.getStatusID() == 1 || t.getStatusID() == 4)
+                .collect(Collectors.toList());
+
+        if (!tasksToRetry.isEmpty()) {
+            logger.accept(">> Retrying " + tasksToRetry.size() + " pending/paused tasks...");
+            for (Task task : tasksToRetry) {
+                submitExistingTask(task);
+            }
+        }
     }
 
     public void assignAndExecuteTask(Task task, ProductLine line) {
@@ -98,15 +110,6 @@ public class TaskManager {
         }
     }
 
-    public void cancelTask(int taskId) {
-        findTaskById(taskId).ifPresent(task -> {
-            if (task.getThread() != null) {
-                task.getThread().interrupt();
-            } else {
-                task.updateStatus(Task.Status.CANCELLED, "Cancelled by user before starting.");
-            }
-        });
-    }
 
     private Optional<ProductLine> findAvailableLine() {
         return productionManager.getProductLines().stream()
@@ -117,12 +120,6 @@ public class TaskManager {
     // Getters
     public List<Task> getAllTasks() {
         return this.tasks;
-    }
-
-    public Optional<Task> findTaskById(int id) {
-        return this.tasks.stream()
-                .filter(task -> task.getId() == id)
-                .findFirst();
     }
 
     public List<Task> getTasksByProductLine(int productLineId) {
@@ -137,5 +134,94 @@ public class TaskManager {
                 .collect(Collectors.toList());
     }
 
+    public Optional<Task> findTaskById(int id) {
+        return this.tasks.stream()
+                .filter(task -> task.getId() == id)
+                .findFirst();
+    }
+
+    public List<Task> getRunningTasks() {
+        List<Task> runningTasks = new ArrayList<>();
+
+        for(Task task: tasks) {
+
+            if(task.getStatusName() == "Running") runningTasks.add(task);
+
+        }
+
+        return runningTasks;
+    }
+
+    public List<Task> getCompletedTasks() {
+        List<Task> completedTasks = new ArrayList<>();
+
+        for(Task task: tasks) {
+
+            if(Objects.equals(task.getStatusName(), "Completed")) completedTasks.add(task);
+
+        }
+
+        return completedTasks;
+    }
+
+    public List<ProductLine> getProductLinesByProduct(int productId) {
+
+
+        List<ProductLine> productLines = new ArrayList<>();
+
+
+        for(Task task: getTasksByProduct(productId)) {
+
+            productLines.add(task.getProductLine());
+
+        }
+
+        return productLines;
+    }
+
+    public List<Product> getProductsByline(int productId){
+        List<Product> products = new ArrayList<>();
+
+
+
+        for(Task task: getTasksByProduct(productId)) {
+
+            if(task.getProductLineID() == productId)
+                products.add(task.getProduct());
+
+
+        }
+
+
+        return products;
+    }
+
+    public List<Product> getAllProducts() {
+        return Product.getAllProducts();
+    }
+
+    public Product getTopProductInDetermineDate(LocalDate first , LocalDate end) {
+
+        List<Product> products = new ArrayList<>();
+
+
+        int max = tasks.get(0).getProduct().getQuantityInStock();
+
+        for(Task task: getAllTasks() ){
+
+            max = Math.max(max, task.getAchievedQuantity());
+
+
+
+
+
+        }
+
+
+        return products.get(0);
+
+
+
+    }
 
 }
