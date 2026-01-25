@@ -53,7 +53,7 @@ public class ViewPerformancePanel extends JPanel {
     }
 
     private void setupPerformanceTable() {
-        DefaultTableModel tableModel = new DefaultTableModel(mockData, columnNames) {
+        DefaultTableModel tableModel = new DefaultTableModel(null, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return column == 4;
@@ -74,27 +74,39 @@ public class ViewPerformancePanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
-    private void saveEvaluation() {
-        BaseFrame parent = (BaseFrame) SwingUtilities.getWindowAncestor(this);
-        int selectedRow = performanceTable.getSelectedRow();
+    public void refreshTableData() {
+        DefaultTableModel model = (DefaultTableModel) performanceTable.getModel();
+        model.setRowCount(0);
+        com.fsociety.factory.BusinessLayer.Manager.LinesManager manager = com.fsociety.factory.BusinessLayer.Manager.LinesManager.getInstance();
+        java.util.Map<com.fsociety.factory.BusinessLayer.Production.ProductLine, Integer> productionData = manager.getProductionQuantity();
 
-        if (selectedRow == -1) {
-            if (parent != null) parent.showStyledMessage("Please select a line to evaluate.", "Selection Required");
-            return;
-        }
-
-        if (parent != null) {
-            boolean confirm = parent.showConfirmMessage("Do you want to finalize the evaluation and notes for this line?", "Confirm Review");
-
-            if (confirm) {
-                String lineName = (String) performanceTable.getValueAt(selectedRow, 0);
-                String note = (String) performanceTable.getValueAt(selectedRow, 4);
-
-                parent.showStyledMessage("Evaluation for " + lineName + " has been synchronized.", "Data Secured");
-            }
+        for (java.util.Map.Entry<com.fsociety.factory.BusinessLayer.Production.ProductLine, Integer> entry : productionData.entrySet()) {
+            com.fsociety.factory.BusinessLayer.Production.ProductLine line = entry.getKey();
+            model.addRow(new Object[]{
+                    line.getName(),
+                    line.getStatusID() == 1 ? "Active" : (line.getStatusID() == 2 ? "Stopped" : "Maintenance"),
+                    "Calculated", // أو أي معادلة للنسبة
+                    entry.getValue() + " Units",
+                    line.getNotes(),
+                    line.getId() // عمود مخفي للتعريف
+            });
         }
     }
 
+    private void saveEvaluation() {
+        BaseFrame parent = (BaseFrame) SwingUtilities.getWindowAncestor(this);
+        int selectedRow = performanceTable.getSelectedRow();
+        if (selectedRow == -1) return;
+
+        if (parent.showConfirmMessage("Save modified notes?", "Confirm Review")) {
+            com.fsociety.factory.BusinessLayer.Manager.LinesManager manager = com.fsociety.factory.BusinessLayer.Manager.LinesManager.getInstance();
+            com.fsociety.factory.BusinessLayer.Production.ProductLine line = manager.getProductLines().get(selectedRow);
+            String newNote = (String) performanceTable.getValueAt(selectedRow, 4);
+
+            manager.editProductLine(line.getId(), line.getName(), line.getStatusID(), newNote);
+            parent.showStyledMessage("Evaluation synchronized.", "Data Secured");
+        }
+    }
     private void styleSaveButton(JButton btn) {
         btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btn.setBackground(highlightColor);

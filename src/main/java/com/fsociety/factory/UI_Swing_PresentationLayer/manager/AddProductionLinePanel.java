@@ -7,7 +7,6 @@ import java.awt.*;
 
 public class AddProductionLinePanel extends JPanel {
 
-    private final JTextField lineIdField;
     private final JTextField lineNameField;
     private final JComboBox<String> statusComboBox;
 
@@ -41,24 +40,22 @@ public class AddProductionLinePanel extends JPanel {
         fgbc.insets = new Insets(10, 5, 10, 5);
         fgbc.anchor = GridBagConstraints.WEST;
 
-        formCard.add(createStyledLabel("Line ID Number:"), getGbc(0, 1, fgbc));
-        lineIdField = createStyledTextField();
-        formCard.add(lineIdField, getGbc(1, 1, fgbc));
+        // تم إزالة أسطر الـ Line ID من هنا
 
-        formCard.add(createStyledLabel("Line Name:"), getGbc(0, 2, fgbc));
+        formCard.add(createStyledLabel("Line Name:"), getGbc(0, 1, fgbc));
         lineNameField = createStyledTextField();
-        formCard.add(lineNameField, getGbc(1, 2, fgbc));
+        formCard.add(lineNameField, getGbc(1, 1, fgbc));
 
-        formCard.add(createStyledLabel("Operational Status:"), getGbc(0, 3, fgbc));
+        formCard.add(createStyledLabel("Operational Status:"), getGbc(0, 2, fgbc));
         String[] statuses = {"Active", "Stopped", "Maintenance"};
         statusComboBox = new JComboBox<>(statuses);
         statusComboBox.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         statusComboBox.setPreferredSize(new Dimension(250, 38));
-        formCard.add(statusComboBox, getGbc(1, 3, fgbc));
+        formCard.add(statusComboBox, getGbc(1, 2, fgbc));
 
         JButton addButton = new JButton("DEPLOY LINE");
         styleDeployButton(addButton);
-        fgbc.gridx = 0; fgbc.gridy = 4; fgbc.gridwidth = 2;
+        fgbc.gridx = 0; fgbc.gridy = 3; fgbc.gridwidth = 2;
         fgbc.fill = GridBagConstraints.NONE;
         fgbc.anchor = GridBagConstraints.CENTER;
         fgbc.insets = new Insets(35, 0, 10, 0);
@@ -70,33 +67,29 @@ public class AddProductionLinePanel extends JPanel {
 
     private void addNewProductionLine() {
         BaseFrame parent = (BaseFrame) SwingUtilities.getWindowAncestor(this);
-
         try {
-            String idStr = lineIdField.getText().trim();
             String lineName = lineNameField.getText().trim();
-
-            if (idStr.isEmpty() || lineName.isEmpty()) {
-                if (parent != null) parent.showStyledMessage("Error: All fields are mandatory!", "Input Validation");
+            if (lineName.isEmpty()) {
+                if (parent != null) parent.showStyledMessage("Error: Line Name is mandatory!", "Input Validation");
                 return;
             }
 
-            int lineId = Integer.parseInt(idStr);
-            String status = (String) statusComboBox.getSelectedItem();
+            int statusID = statusComboBox.getSelectedIndex() + 1;
 
             if (parent != null && parent.showConfirmMessage("Deploy new production line to factory network?", "Confirm Deployment")) {
+                boolean success = com.fsociety.factory.BusinessLayer.Manager.LinesManager.getInstance()
+                        .addNewProductLine(lineName, statusID, "Initial system deployment");
 
-                String message = String.format("Line #%d (%s) initialized successfully with status: %s", lineId, lineName, status);
-                parent.showStyledMessage(message, "System Deployed");
-
-                lineIdField.setText("");
-                lineNameField.setText("");
-                statusComboBox.setSelectedIndex(0);
+                if (success) {
+                    parent.showStyledMessage("Line (" + lineName + ") deployed successfully!", "System Deployed");
+                    lineNameField.setText("");
+                    statusComboBox.setSelectedIndex(0);
+                } else {
+                    parent.showStyledMessage("Failed to save to database.", "System Error");
+                }
             }
-
-        } catch (NumberFormatException ex) {
-            if (parent != null) parent.showStyledMessage("Invalid ID format. Please use numeric values.", "Format Error");
         } catch (Exception ex) {
-            if (parent != null) parent.showStyledMessage("An internal error occurred: " + ex.getMessage(), "Critical Error");
+            if (parent != null) parent.showStyledMessage("An error occurred: " + ex.getMessage(), "Critical Error");
         }
     }
 

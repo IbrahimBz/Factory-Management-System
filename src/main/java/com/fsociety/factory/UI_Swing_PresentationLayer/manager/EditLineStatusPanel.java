@@ -66,21 +66,31 @@ public class EditLineStatusPanel extends JPanel {
         updateButton.addActionListener(e -> updateLineStatus());
     }
 
+    public void refreshLineList() {
+        lineSelectorComboBox.removeAllItems();
+        java.util.List<com.fsociety.factory.BusinessLayer.Production.ProductLine> lines = com.fsociety.factory.BusinessLayer.Manager.LinesManager.getInstance().getProductLines();
+        for (com.fsociety.factory.BusinessLayer.Production.ProductLine line : lines) {
+            lineSelectorComboBox.addItem(line.getName());
+        }
+    }
     private void updateLineStatus() {
         BaseFrame parent = (BaseFrame) SwingUtilities.getWindowAncestor(this);
+        com.fsociety.factory.BusinessLayer.Manager.LinesManager manager = com.fsociety.factory.BusinessLayer.Manager.LinesManager.getInstance();
 
-        String selectedLine = (String) lineSelectorComboBox.getSelectedItem();
-        String newStatus = (String) statusComboBox.getSelectedItem();
+        int selectedIndex = lineSelectorComboBox.getSelectedIndex();
+        if (selectedIndex == -1) return;
 
-        if (selectedLine == null || parent == null) return;
+        com.fsociety.factory.BusinessLayer.Production.ProductLine selectedLine = manager.getProductLines().get(selectedIndex);
+        String newStatusName = (String) statusComboBox.getSelectedItem();
+        int newStatusID = statusComboBox.getSelectedIndex() + 1;
 
-        String confirmMsg = "Are you sure you want to change " + selectedLine + " to " + newStatus + "?";
-        if (parent.showConfirmMessage(confirmMsg, "Protocol Override")) {
-
+        if (parent.showConfirmMessage("Update " + selectedLine.getName() + " to " + newStatusName + "?", "Protocol Override")) {
             try {
-                String successMsg = "System successfully updated line status to: " + newStatus;
-                parent.showStyledMessage(successMsg, "Status Synchronized");
-
+                // تنفيذ التعديل في المنطق
+                boolean success = manager.editProductLine(selectedLine.getId(), selectedLine.getName(), newStatusID, selectedLine.getNotes());
+                if (success) {
+                    parent.showStyledMessage("Status Synchronized successfully.", "Success");
+                }
             } catch (Exception ex) {
                 parent.showStyledMessage("Failed to update system: " + ex.getMessage(), "Terminal Error");
             }

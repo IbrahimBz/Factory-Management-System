@@ -138,4 +138,13 @@ public class User {
         return role;
     }
 
+    public static User login(String username, char[] password) {
+        User user = findByUsername(username);
+
+        if (user != null && user.checkPassword(password)) {
+            return user;
+        }
+
+        return null;
+    }
 }

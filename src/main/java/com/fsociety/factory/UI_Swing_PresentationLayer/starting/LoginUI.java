@@ -1,11 +1,13 @@
 package com.fsociety.factory.UI_Swing_PresentationLayer.starting;
 
+import com.fsociety.factory.BusinessLayer.Login.User;
 import com.fsociety.factory.UI_Swing_PresentationLayer.manager.ManagerDashboard;
 import com.fsociety.factory.UI_Swing_PresentationLayer.supervisor.SupervisorDashboard;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class LoginUI extends BaseFrame {
@@ -34,7 +36,7 @@ public class LoginUI extends BaseFrame {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1.0;
 
-        // --- الجزء الأيسر ---
+        // --- الجزء الأيسر (معلومات النظام) ---
         JPanel leftSidePanel = new JPanel();
         leftSidePanel.setLayout(new BoxLayout(leftSidePanel, BoxLayout.Y_AXIS));
         leftSidePanel.setBackground(new Color(0, 0, 0, 190));
@@ -78,44 +80,48 @@ public class LoginUI extends BaseFrame {
         lblLogin.setBounds(0, 20, 450, 60);
         loginFormContainer.add(lblLogin);
 
-        // حقل المستخدم
-        JTextField txtEmail = new JTextField();
-        txtEmail.setBounds(40, 140, 370, 45);
-        styleTextField(txtEmail);
-        loginFormContainer.add(txtEmail);
+        JTextField txtUser = new JTextField();
+        txtUser.setBounds(40, 140, 370, 45);
+        styleTextField(txtUser);
+        loginFormContainer.add(txtUser);
 
-        // حقل كلمة المرور
         JPasswordField txtPass = new JPasswordField();
         txtPass.setBounds(40, 240, 370, 45);
         styleTextField(txtPass);
         loginFormContainer.add(txtPass);
 
-        // زر الدخول مع التحقق الشرطي
+        // زر الدخول مع الربط الحقيقي
         JButton btnLogin = createStyledButton("LOGIN NOW", new Color(0, 200, 200));
         btnLogin.setBounds(40, 330, 175, 50);
-        btnLogin.addActionListener(e -> {
-            String user = txtEmail.getText().trim();
-            String pass = new String(txtPass.getPassword());
+        // ... داخل ميثود btnLogin.addActionListener ...
 
-            if (isManagerRole) {
-                // بيانات تجريبية للمدير
-                if (user.equals("admin") && pass.equals("1234")) {
-                    showStyledMessage("Manager Access Granted!", "Success");
-                     new ManagerDashboard().setVisible(true);
+        btnLogin.addActionListener(e -> {
+            String username = txtUser.getText().trim();
+            char[] password = txtPass.getPassword();
+
+            // استدعاء ميثود الدخول من كلاس User
+            User authenticatedUser = User.login(username, password);
+
+            if (authenticatedUser != null) {
+                // قمت بتغيير اسم المتغير هنا إلى isUserManager لتجنب التعارض
+                boolean isUserManager = (authenticatedUser.getRole() == User.UserRole.MANAGER);
+
+                // مقارنة دور المستخدم القادم من القاعدة مع نوع البوابة (isManagerRole)
+                if (isUserManager == isManagerRole) {
+                    showStyledMessage("Access Granted! Welcome, " + authenticatedUser.getUsername(), "Success");
+                    if (isUserManager) {
+                        new ManagerDashboard().setVisible(true);
+                    } else {
+                        new SupervisorDashboard().setVisible(true);
+                    }
                     this.dispose();
                 } else {
-                    showStyledMessage("Invalid Manager Credentials", "Error");
+                    showStyledMessage("Access Denied: Role mismatch for this portal.", "Security Error");
                 }
             } else {
-                // بيانات تجريبية للمشرف
-                if (user.equals("supervisor") && pass.equals("pass123")) {
-                    showStyledMessage("Supervisor Access Granted!", "Success");
-                    new SupervisorDashboard().setVisible(true);
-                    this.dispose();
-                } else {
-                    showStyledMessage("Invalid Supervisor Credentials", "Error");
-                }
+                showStyledMessage("Invalid username or password.", "Login Failed");
             }
+            Arrays.fill(password, ' ');
         });
 
         JButton btnCancel = createStyledButton("Cancel", new Color(150, 0, 0));
@@ -145,7 +151,6 @@ public class LoginUI extends BaseFrame {
         add(bgPanel, BorderLayout.CENTER);
     }
 
-    // تنسيق الحقول لتبقى بنفس الشكل
     private void styleTextField(JTextField field) {
         field.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         field.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, Color.WHITE));
@@ -155,15 +160,13 @@ public class LoginUI extends BaseFrame {
     }
 
     private void openSignUpDialog() {
-        // إعداد الـ Dialog
         JDialog signUpDialog = new JDialog(this, "System Registration", true);
         signUpDialog.setSize(450, 550);
         signUpDialog.setLocationRelativeTo(this);
         signUpDialog.setResizable(false);
 
-        // الحاوية الرئيسية مع خلفية متناسقة
         JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBackground(new Color(0, 51, 51)); // نفس روح ألوان الـ Dashboard
+        mainPanel.setBackground(new Color(0, 51, 51));
         mainPanel.setBorder(new EmptyBorder(30, 40, 30, 40));
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -171,14 +174,12 @@ public class LoginUI extends BaseFrame {
         gbc.gridx = 0;
         gbc.insets = new Insets(10, 0, 10, 0);
 
-        // العنوان
         String roleType = isManagerRole ? "MANAGER" : "SUPERVISOR";
         JLabel lblTitle = new JLabel("CREATE " + roleType + " ACCOUNT");
         lblTitle.setFont(new Font("Segoe UI Black", Font.BOLD, 22));
         lblTitle.setForeground(new Color(0, 251, 255));
         lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // الحقول النصية (نستخدم نفس تنسيق الـ Login)
         JTextField txtNewUser = new JTextField();
         txtNewUser.setPreferredSize(new Dimension(300, 40));
         styleTextField(txtNewUser);
@@ -191,37 +192,55 @@ public class LoginUI extends BaseFrame {
         txtConfirmPass.setPreferredSize(new Dimension(300, 40));
         styleTextField(txtConfirmPass);
 
-        // تسميات الحقول (Labels)
-        JLabel lblU = createFieldLabel("Choose Username");
-        JLabel lblP = createFieldLabel("Choose Password");
-        JLabel lblCP = createFieldLabel("Confirm Password");
-
-        // زر التسجيل
         JButton btnSubmit = createStyledButton("REGISTER NOW", new Color(0, 180, 180));
         btnSubmit.setPreferredSize(new Dimension(300, 50));
+
         btnSubmit.addActionListener(e -> {
-            // هنا يمكنك إضافة منطق الحفظ في الملفات لاحقاً
-            showStyledMessage("Registration Request Sent to Admin!", "Success");
-            signUpDialog.dispose();
+            String user = txtNewUser.getText().trim();
+            char[] pass = txtNewPass.getPassword();
+            char[] confirm = txtConfirmPass.getPassword();
+
+            if (user.isEmpty() || pass.length < 6) {
+                showStyledMessage("Username is required (Password: min 6 chars)", "Validation Error");
+                return;
+            }
+
+            if (!Arrays.equals(pass, confirm)) {
+                showStyledMessage("Passwords do not match!", "Error");
+                return;
+            }
+
+            // تحديد الدور بناءً على الواجهة المفتوحة
+            User.UserRole selectedRole = isManagerRole ? User.UserRole.MANAGER : User.UserRole.PRODUCTION_SUPERVISOR;
+
+            // استدعاء ميثود الإنشاء في الـ Business Layer
+            User created = User.createNewUser(user, pass, selectedRole);
+
+            if (created != null) {
+                showStyledMessage("Account created successfully! Please Login.", "Success");
+                signUpDialog.dispose();
+            } else {
+                showStyledMessage("Username already taken or system error.", "Failure");
+            }
+
+            Arrays.fill(pass, ' ');
+            Arrays.fill(confirm, ' ');
         });
 
-        // إضافة العناصر للـ Layout
         gbc.gridy = 0; mainPanel.add(lblTitle, gbc);
         gbc.gridy = 1; mainPanel.add(Box.createVerticalStrut(20), gbc);
-        gbc.gridy = 2; mainPanel.add(lblU, gbc);
+        gbc.gridy = 2; mainPanel.add(createFieldLabel("Choose Username"), gbc);
         gbc.gridy = 3; mainPanel.add(txtNewUser, gbc);
-        gbc.gridy = 4; mainPanel.add(lblP, gbc);
+        gbc.gridy = 4; mainPanel.add(createFieldLabel("Choose Password"), gbc);
         gbc.gridy = 5; mainPanel.add(txtNewPass, gbc);
-        gbc.gridy = 6; mainPanel.add(lblCP, gbc);
+        gbc.gridy = 6; mainPanel.add(createFieldLabel("Confirm Password"), gbc);
         gbc.gridy = 7; mainPanel.add(txtConfirmPass, gbc);
-        gbc.gridy = 8; mainPanel.add(Box.createVerticalStrut(30), gbc);
         gbc.gridy = 9; mainPanel.add(btnSubmit, gbc);
 
         signUpDialog.add(mainPanel);
         signUpDialog.setVisible(true);
     }
 
-    // دالة مساعدة لإنشاء نصوص الحقول الصغيرة
     private JLabel createFieldLabel(String text) {
         JLabel label = new JLabel(text);
         label.setForeground(new Color(180, 255, 255));
@@ -243,24 +262,13 @@ public class LoginUI extends BaseFrame {
     }
 
     public static void main(String[] args) {
-        // 1. إنشاء وإظهار شاشة الترحيب أولاً
         SplashScreen splash = new SplashScreen();
         splash.setVisible(true);
-
-        // 2. تشغيل مؤقت أو Thread لمحاكاة التحميل
         new Thread(() -> {
             try {
-                // تنفيذ دالة التحميل (التي تحرك شريط التقدم)
                 splash.startLoading();
-
-                // انتهاء التحميل وإغلاق الـ Splash
                 splash.dispose();
-
-                // 3. فتح واجهة اختيار الأدوار بعد انتهاء التحميل
-                SwingUtilities.invokeLater(() -> {
-                    new RoleSelectionUI().setVisible(true);
-                });
-
+                SwingUtilities.invokeLater(() -> new RoleSelectionUI().setVisible(true));
             } catch (Exception e) {
                 e.printStackTrace();
             }

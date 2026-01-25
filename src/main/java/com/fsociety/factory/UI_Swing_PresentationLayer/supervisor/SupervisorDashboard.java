@@ -43,7 +43,6 @@ public class SupervisorDashboard extends BaseFrame {
                    new TaskManagementUI().setVisible(true);
                 }));
 
-        // البطاقة 4: تقارير الأعطال
         mainContent.add(createTaskCard("INCIDENT LOGS",
                 "Report machinery issues and view maintenance logs.",
                 new Color(192, 57, 43), "⚠️", e -> {
@@ -52,7 +51,6 @@ public class SupervisorDashboard extends BaseFrame {
 
         add(mainContent, BorderLayout.CENTER);
 
-        // الشريط السفلي للحالة
         add(createFooterStatus(), BorderLayout.SOUTH);
 
     }

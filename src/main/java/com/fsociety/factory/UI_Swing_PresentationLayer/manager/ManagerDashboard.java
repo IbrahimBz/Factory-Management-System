@@ -12,18 +12,24 @@ public class ManagerDashboard extends BaseFrame {
     private final CardLayout cardLayout;
     private final JPanel contentPanel;
 
+    // تعريف الألواح كمتغيرات للوصول لدوال التحديث
+    private final AddProductionLinePanel addProductionLinePanel;
+    private final EditLineStatusPanel editLineStatusPanel;
+    private final ViewPerformancePanel viewPerformancePanel;
+
     private static final String ADD_LINE_CARD = "AddProductionLine";
     private static final String EDIT_STATUS_CARD = "EditLineStatus";
     private static final String VIEW_PERFORMANCE_CARD = "ViewPerformance";
     private static final String DEFAULT_CARD = "DefaultView";
 
     public ManagerDashboard() {
-
         super("Manager Dashboard - Factory Strategic Control");
-
-
         setLayout(new BorderLayout());
 
+        // تهيئة الألواح أولاً
+        addProductionLinePanel = new AddProductionLinePanel();
+        editLineStatusPanel = new EditLineStatusPanel();
+        viewPerformancePanel = new ViewPerformancePanel();
 
         JPanel navigationPanel = createNavigationPanel();
         add(navigationPanel, BorderLayout.WEST);
@@ -36,15 +42,27 @@ public class ManagerDashboard extends BaseFrame {
         add(contentPanel, BorderLayout.CENTER);
 
         cardLayout.show(contentPanel, DEFAULT_CARD);
-
         setVisible(true);
+    }
+
+    // ميثود التبديل مع تحديث البيانات
+    private void showPanel(String cardName) {
+        switch (cardName) {
+            case EDIT_STATUS_CARD:
+                editLineStatusPanel.refreshLineList(); // تحديث قائمة الخطوط
+                break;
+            case VIEW_PERFORMANCE_CARD:
+                viewPerformancePanel.refreshTableData(); // تحديث جدول الأداء
+                break;
+        }
+        cardLayout.show(contentPanel, cardName);
     }
 
     private JPanel createNavigationPanel() {
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
         sidebar.setPreferredSize(new Dimension(280, getHeight()));
-        sidebar.setBackground(primaryColor); // استخدام اللون الرئيسي من BaseFrame
+        sidebar.setBackground(primaryColor);
         sidebar.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 3, accentColor));
 
         JLabel lblMenu = new JLabel("EXECUTIVE MENU");
@@ -61,9 +79,10 @@ public class ManagerDashboard extends BaseFrame {
         logoutBtn.setMaximumSize(new Dimension(220, 45));
         logoutBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        addProductLineBtn.addActionListener(e -> cardLayout.show(contentPanel, ADD_LINE_CARD));
-        editLineStatusBtn.addActionListener(e -> cardLayout.show(contentPanel, EDIT_STATUS_CARD));
-        viewPerformanceBtn.addActionListener(e -> cardLayout.show(contentPanel, VIEW_PERFORMANCE_CARD));
+        // تعديل الـ ActionListeners لاستخدام ميثود التبديل المطورة
+        addProductLineBtn.addActionListener(e -> showPanel(ADD_LINE_CARD));
+        editLineStatusBtn.addActionListener(e -> showPanel(EDIT_STATUS_CARD));
+        viewPerformanceBtn.addActionListener(e -> showPanel(VIEW_PERFORMANCE_CARD));
 
         logoutBtn.addActionListener(e -> {
             if (showConfirmMessage("Do you want to logout and return to role selection?", "Confirm Logout")) {
@@ -86,7 +105,7 @@ public class ManagerDashboard extends BaseFrame {
     }
 
     private JButton buttonMaker(String text) {
-        JButton button = createStyledButton(text, new Color(0, 150, 150)); // استخدام الأزرار المنسقة
+        JButton button = createStyledButton(text, new Color(0, 150, 150));
         button.setMaximumSize(new Dimension(240, 50));
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         return button;
@@ -109,9 +128,8 @@ public class ManagerDashboard extends BaseFrame {
         }
 
         panel.add(defaultView, DEFAULT_CARD);
-
-        panel.add(new AddProductionLinePanel(), ADD_LINE_CARD);
-        panel.add(new EditLineStatusPanel(), EDIT_STATUS_CARD);
-        panel.add(new ViewPerformancePanel(), VIEW_PERFORMANCE_CARD);
+        panel.add(addProductionLinePanel, ADD_LINE_CARD);
+        panel.add(editLineStatusPanel, EDIT_STATUS_CARD);
+        panel.add(viewPerformancePanel, VIEW_PERFORMANCE_CARD);
     }
 }

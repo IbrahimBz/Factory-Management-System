@@ -53,6 +53,7 @@ public class LinesManager {
 
         ProductLine productLine = ProductLine.findByID(productLineID);
 
+        assert productLine != null;
         productLine.setName(name);
         productLine.setStatusID(statusID);
         productLine.setNotes(notes);
@@ -73,13 +74,20 @@ public class LinesManager {
     }
 
     public Map<ProductLine, Integer> getProductionQuantity() {
-
         Map<ProductLine, Integer> productionQuantity = new HashMap<>();
+
+        for (ProductLine line : this.productLines) {
+            productionQuantity.put(line, 0);
+        }
 
         TaskManager taskManager = TaskManager.getInstance();
 
-        for(Task task: taskManager.getAllTasks()) {
-                productionQuantity.put(task.getProductLine(), task.getAchievedQuantity());
+        for (Task task : taskManager.getAllTasks()) {
+            ProductLine taskLine = task.getProductLine();
+            if (productionQuantity.containsKey(taskLine)) {
+                int currentQty = productionQuantity.get(taskLine);
+                productionQuantity.put(taskLine, currentQty + task.getAchievedQuantity());
+            }
         }
 
         return productionQuantity;
