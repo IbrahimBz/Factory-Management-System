@@ -40,7 +40,6 @@ public class AddProductionLinePanel extends JPanel {
         fgbc.insets = new Insets(10, 5, 10, 5);
         fgbc.anchor = GridBagConstraints.WEST;
 
-        // تم إزالة أسطر الـ Line ID من هنا
 
         formCard.add(createStyledLabel("Line Name:"), getGbc(0, 1, fgbc));
         lineNameField = createStyledTextField();

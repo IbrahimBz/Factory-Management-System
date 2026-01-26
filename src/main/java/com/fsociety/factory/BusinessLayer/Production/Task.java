@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 public class Task implements Runnable {
 
     private int id;
-    private Integer productLineID; // --- تم التغيير إلى Integer ليكون قابلاً لـ null ---
+    private Integer productLineID;
     private int productID;
     private int requiredQuantity;
     private int achievedQuantity;
@@ -26,7 +26,7 @@ public class Task implements Runnable {
 
     private transient Thread thread;
     private transient Product product;
-    private transient ProductLine assignedLine; // --- تم تغيير الاسم ليكون أوضح ---
+    private transient ProductLine assignedLine;
     private transient Consumer<String> logger = (msg) -> {};
 
     private Task(int id, Integer productLineID, int productID, int requiredQuantity, int achievedQuantity,
@@ -149,12 +149,10 @@ public class Task implements Runnable {
     public void run() {
         this.thread = Thread.currentThread();
         try {
-            // 1. Initial Status Update
             updateStatus(Status.RUNNING, "Starting production on " + assignedLine.getName());
 
             Inventory inventory = Inventory.getInstance();
 
-            // 2. Production Loop
             for (int i = achievedQuantity; i < requiredQuantity; i++) {
 
                 if (Thread.currentThread().isInterrupted()) {
@@ -251,8 +249,6 @@ public class Task implements Runnable {
     }
 
 
-    // --- Getters and Setters ---
-    public void setLogger(Consumer<String> logger) { this.logger = logger; }
     public void setProduct(Product product) { this.product = product; this.productID = product.getId(); }
     public void setRequiredQuantity(int quantity) { this.requiredQuantity = quantity; }
     public void setClientID(int clientID) { this.clientID = clientID; }

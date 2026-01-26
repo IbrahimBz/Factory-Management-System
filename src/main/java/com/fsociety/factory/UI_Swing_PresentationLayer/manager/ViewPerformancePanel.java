@@ -20,7 +20,7 @@ public class ViewPerformancePanel extends JPanel {
             {"Line 03: Inspection/Quality", "Active", 100, "200 Laptop", "Perfect score. Efficiency at peak."}
     };
 
-    private final String[] columnNames = {"Line Name", "Status", "Completion (%)", "Last Product", "Manager Notes"};
+    private final String[] columnNames = {"Line Name", "Status", "Last Product", "Manager Notes"};
 
     public ViewPerformancePanel() {
         Color backgroundColor = new Color(240, 245, 245);
@@ -85,10 +85,8 @@ public class ViewPerformancePanel extends JPanel {
             model.addRow(new Object[]{
                     line.getName(),
                     line.getStatusID() == 1 ? "Active" : (line.getStatusID() == 2 ? "Stopped" : "Maintenance"),
-                    "Calculated", // أو أي معادلة للنسبة
                     entry.getValue() + " Units",
                     line.getNotes(),
-                    line.getId() // عمود مخفي للتعريف
             });
         }
     }

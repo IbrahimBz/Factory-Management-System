@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 public class ProductionManager {
 
     private static ProductionManager instance;
-    private final ExecutorService executorService; // تم تغيير الاسم ليكون أوضح
+    private final ExecutorService executorService;
     private final List<ProductLine> productLines;
 
     private ProductionManager() {

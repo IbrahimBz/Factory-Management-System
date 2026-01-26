@@ -80,38 +80,30 @@ public class Product {
     }
 
     public boolean canProduceQuantity(int quantityToProduce) {
-        // إذا لم تكن هناك متطلبات، يمكن الإنتاج دائماً
         if (requiredItems.isEmpty()) {
             return true;
         }
 
         Inventory inventory = Inventory.getInstance();
 
-        // قم بالمرور على كل مادة خام مطلوبة
         for (Map.Entry<Integer, Integer> requirement : requiredItems.entrySet()) {
             int itemId = requirement.getKey();
             int quantityPerUnit = requirement.getValue();
 
-            // حساب إجمالي الكمية المطلوبة من هذه المادة الخام
             long totalRequired = (long) quantityPerUnit * quantityToProduce;
 
-            // البحث عن المادة الخام في المخزون
             Optional<Item> itemOpt = inventory.findItemByIdInMemory(itemId);
 
             if (itemOpt.isPresent()) {
                 Item itemInStock = itemOpt.get();
-                // التحقق: هل الكمية المتوفرة في المخزون أقل من الإجمالي المطلوب؟
                 if (itemInStock.getAvailableQuantity() < totalRequired) {
-                    // إذا كانت مادة واحدة غير كافية، أرجع false فوراً
                     return false;
                 }
             } else {
-                // إذا كانت المادة الخام غير موجودة في المخزون أصلاً، لا يمكن الإنتاج
                 return false;
             }
         }
 
-        // إذا اكتملت الحلقة دون مشاكل، فهذا يعني أن جميع المواد متوفرة
         return true;
     }
 

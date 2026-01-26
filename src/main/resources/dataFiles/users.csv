@@ -3,3 +3,4 @@ userID,userName,hashedPassword,userRole
 "2","Ibrahim","$2a$12$vNcKazZo8olLCURN91s6lu8Um/tmymAjv4g42JN8Lg0jXCTiiVHCq","PRODUCTION_SUPERVISOR"
 "3","nazeerzn","$2a$12$xdTCowALyoK.YPLswrdhEuLJpARexYhiPi3XpBKtgoFKZfBadfyma","PRODUCTION_SUPERVISOR"
 "4","Ibrahim1","$2a$12$isUrXi1mHBVA/tgrR4xnfO2pqDyUSLnWmz9Zc8zu678R7D0LbrTtq","MANAGER"
+"5","nazeern","$2a$12$G2ZAOu55G92//aIhnnOi7.WL4bBQEaRZ.07oleQqX2jGRBrFqR98i","PRODUCTION_SUPERVISOR"

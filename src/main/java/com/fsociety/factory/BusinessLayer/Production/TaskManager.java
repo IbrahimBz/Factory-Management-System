@@ -66,7 +66,7 @@ public class TaskManager {
         }
     }
 
-    public void assignAndExecuteTask(Task task, ProductLine line) {
+    public void assignAndExecuteTask(Task task, ProductLine line){
         if (line == null || !line.isTrulyAvailable()) {
             task.updateStatus(Task.Status.PENDING, "Assignment failed, line was not available.");
             return;

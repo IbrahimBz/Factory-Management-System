@@ -268,16 +268,15 @@ public class TaskManagementUI extends BaseFrame {
             pb.setValue((int) t.getCompletionRate());
             pb.setStringPainted(true);
 
-            // UPDATED DATA MAPPING
             taskModel.addRow(new Object[]{
                     t.getId(),
                     t.getProduct().getName(),
                     t.getAssignedLine() != null ? t.getAssignedLine().getName() : "Wait...",
                     t.getStatusName(),
                     pb,
-                    (t.getStartDate() != null) ? t.getStartDate().toString() : "N/A", // Fixed Start Date
-                    (t.getEndDate() != null) ? t.getEndDate().toString() : "-",       // Added End Date
-                    t.getAchievedQuantity() + " / " + t.getRequiredQuantity()         // Fixed Quantity
+                    (t.getStartDate() != null) ? t.getStartDate().toString() : "N/A",
+                    (t.getEndDate() != null) ? t.getEndDate().toString() : "-",
+                    t.getAchievedQuantity() + " / " + t.getRequiredQuantity()
             });
         }
 
@@ -291,10 +290,6 @@ public class TaskManagementUI extends BaseFrame {
             }
         }
     }
-
-    // =================================================================================
-    // TAB 2: HISTORY & ANALYTICS
-    // =================================================================================
 
     private JPanel createHistoryPanel() {
         JPanel panel = new JPanel(new BorderLayout());

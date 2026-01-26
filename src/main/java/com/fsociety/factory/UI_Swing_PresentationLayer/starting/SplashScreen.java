@@ -1,5 +1,7 @@
 package com.fsociety.factory.UI_Swing_PresentationLayer.starting;
 
+import com.fsociety.factory.dataAccessLayer.ErrorLogger;
+
 import javax.swing.*;
 import java.awt.*;
 public class SplashScreen extends JWindow {
@@ -55,7 +57,7 @@ public class SplashScreen extends JWindow {
                 Thread.sleep(35);
                 progressBar.setValue(i);
 
-                if (i == 10) lblStatus.setText("Connecting to Database...");
+                if (i == 10) lblStatus.setText("Connecting to Files...");
                 if (i == 40) lblStatus.setText("Loading Security Modules...");
                 if (i == 70) lblStatus.setText("Optimizing UI Components...");
                 if (i == 90) lblStatus.setText("Launching System...");
@@ -65,7 +67,7 @@ public class SplashScreen extends JWindow {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            ErrorLogger.logError(e);
         }
     }
 }

@@ -12,7 +12,7 @@ public class ManagerDashboard extends BaseFrame {
     private final CardLayout cardLayout;
     private final JPanel contentPanel;
 
-    // تعريف الألواح كمتغيرات للوصول لدوال التحديث
+
     private final AddProductionLinePanel addProductionLinePanel;
     private final EditLineStatusPanel editLineStatusPanel;
     private final ViewPerformancePanel viewPerformancePanel;
@@ -26,7 +26,6 @@ public class ManagerDashboard extends BaseFrame {
         super("Manager Dashboard - Factory Strategic Control");
         setLayout(new BorderLayout());
 
-        // تهيئة الألواح أولاً
         addProductionLinePanel = new AddProductionLinePanel();
         editLineStatusPanel = new EditLineStatusPanel();
         viewPerformancePanel = new ViewPerformancePanel();
@@ -49,10 +48,10 @@ public class ManagerDashboard extends BaseFrame {
     private void showPanel(String cardName) {
         switch (cardName) {
             case EDIT_STATUS_CARD:
-                editLineStatusPanel.refreshLineList(); // تحديث قائمة الخطوط
+                editLineStatusPanel.refreshLineList();
                 break;
             case VIEW_PERFORMANCE_CARD:
-                viewPerformancePanel.refreshTableData(); // تحديث جدول الأداء
+                viewPerformancePanel.refreshTableData();
                 break;
         }
         cardLayout.show(contentPanel, cardName);
@@ -79,7 +78,6 @@ public class ManagerDashboard extends BaseFrame {
         logoutBtn.setMaximumSize(new Dimension(220, 45));
         logoutBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // تعديل الـ ActionListeners لاستخدام ميثود التبديل المطورة
         addProductLineBtn.addActionListener(e -> showPanel(ADD_LINE_CARD));
         editLineStatusBtn.addActionListener(e -> showPanel(EDIT_STATUS_CARD));
         viewPerformanceBtn.addActionListener(e -> showPanel(VIEW_PERFORMANCE_CARD));

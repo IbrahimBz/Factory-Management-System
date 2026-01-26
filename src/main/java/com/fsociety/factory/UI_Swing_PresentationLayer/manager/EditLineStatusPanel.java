@@ -86,7 +86,7 @@ public class EditLineStatusPanel extends JPanel {
 
         if (parent.showConfirmMessage("Update " + selectedLine.getName() + " to " + newStatusName + "?", "Protocol Override")) {
             try {
-                // تنفيذ التعديل في المنطق
+
                 boolean success = manager.editProductLine(selectedLine.getId(), selectedLine.getName(), newStatusID, selectedLine.getNotes());
                 if (success) {
                     parent.showStyledMessage("Status Synchronized successfully.", "Success");
